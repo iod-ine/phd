@@ -29,3 +29,19 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = "tests"
 pythonpath = "."
+
+[tool.ruff.lint]
+select = [
+    "E",     # Error
+    "F",     # Pyflakes
+    "ARG",   # flake8-unused-arguments
+    "W",     # Warning
+    "I",     # isort
+    "Q",     # flake8-quotes
+    "N",     # pep8-naming
+    "RET",   # flake8-return
+    "SIM",   # flake8-simplify
+    "PD",    # pandas-vet
+    "NPY",   # NumPy-specific rules
+    "PERF",  # Perflint
+]
