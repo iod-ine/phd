@@ -1,4 +1,5 @@
 .DS_Store
+lightning_logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
