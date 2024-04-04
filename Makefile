@@ -5,6 +5,10 @@ greet:
 	@echo "  teardown-python: Remove the Jupyter kernel and the environment"
 
 
+test:
+	poetry run pytest -v
+
+
 data: data/raw/lysva/field_survey.geojson
 data: data/raw/trees/Birch/birch_13.las
 data/raw/lysva/field_survey.geojson:
