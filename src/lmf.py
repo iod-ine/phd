@@ -4,7 +4,11 @@ import numpy as np
 import scipy
 
 
-def local_maxima_filter(cloud: np.ndarray, window_size: float, height_threshold: float) -> np.ndarray:
+def local_maxima_filter(
+    cloud: np.ndarray,
+    window_size: float,
+    height_threshold: float,
+) -> np.ndarray:
     """Detect local maxima in the point cloud with a fixed window size."""
 
     if not isinstance(cloud, np.ndarray):
