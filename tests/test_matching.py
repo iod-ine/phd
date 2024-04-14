@@ -102,3 +102,22 @@ def test_match_candidates_thresholds(
         max_height_difference=max_height_difference,
     )
     assert actual == expected
+
+
+def test_match_candidates_with_nan_height():
+    actual = match_candidates(
+        ground_truth=np.array([[0, 0, np.nan]]),
+        candidates=np.array([[0, 1, 3], [0, 2, 4]]),
+        max_distance=5,
+        max_height_difference=5,
+    )
+    assert actual[0]["ground_truth"][:2] == (0, 0)
+    assert np.isnan(actual[0]["ground_truth"][2])
+    assert actual[0]["class"] == "TP"
+    assert actual[0]["distance"] == 1.0
+    assert actual[1] == {
+        "ground_truth": None,
+        "candidate": (0.0, 2.0, 4.0),
+        "class": "FP",
+        "distance": None,
+    }
