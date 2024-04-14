@@ -62,7 +62,7 @@ matches = {
             5,
             5,
             matches["first"],
-            id="select_closest",
+            id="all_within",
         ),
         pytest.param(
             5,
@@ -90,7 +90,7 @@ matches = {
         ),
     ],
 )
-def test_match_candidates(
+def test_match_candidates_thresholds(
     max_distance,
     max_height_difference,
     expected,
