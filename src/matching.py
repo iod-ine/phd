@@ -35,6 +35,9 @@ def match_candidates(
     candidates_matched_mask = np.zeros(candidates.shape[0], dtype=bool)
     out = []
 
+    def ndarray_to_tuple(array: np.ndarray) -> tuple:
+        return tuple(None if np.isnan(x) else x for x in array)
+
     for (i, j), distance in sparse_distances:
         if (
             np.isnan(ground_truth[i][2])
@@ -45,7 +48,7 @@ def match_candidates(
                 out.append(
                     {
                         "ground_truth": None,
-                        "candidate": tuple(candidates[j]),
+                        "candidate": ndarray_to_tuple(candidates[j]),
                         "class": "FP",
                         "distance": None,
                     }
@@ -54,7 +57,7 @@ def match_candidates(
                 ground_truth_matched_mask[i] = True
                 out.append(
                     {
-                        "ground_truth": tuple(ground_truth[i]),
+                        "ground_truth": ndarray_to_tuple(ground_truth[i]),
                         "candidate": None,
                         "class": "FN",
                         "distance": None,
@@ -65,8 +68,8 @@ def match_candidates(
                 candidates_matched_mask[j] = True
                 out.append(
                     {
-                        "ground_truth": tuple(ground_truth[i]),
-                        "candidate": tuple(candidates[j]),
+                        "ground_truth": ndarray_to_tuple(ground_truth[i]),
+                        "candidate": ndarray_to_tuple(candidates[j]),
                         "class": "TP",
                         "distance": distance,
                     }

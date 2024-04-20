@@ -111,13 +111,17 @@ def test_match_candidates_with_nan_height():
         max_distance=5,
         max_height_difference=5,
     )
-    assert actual[0]["ground_truth"][:2] == (0, 0)
-    assert np.isnan(actual[0]["ground_truth"][2])
-    assert actual[0]["class"] == "TP"
-    assert actual[0]["distance"] == 1.0
-    assert actual[1] == {
-        "ground_truth": None,
-        "candidate": (0.0, 2.0, 4.0),
-        "class": "FP",
-        "distance": None,
-    }
+    assert actual == [
+        {
+            "ground_truth": (0, 0, None),
+            "candidate": (0, 1, 3),
+            "class": "TP",
+            "distance": 1.0,
+        },
+        {
+            "ground_truth": None,
+            "candidate": (0, 2, 4),
+            "class": "FP",
+            "distance": None,
+        },
+    ]
