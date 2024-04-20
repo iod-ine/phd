@@ -85,6 +85,9 @@ def _matches_are_equal(first, second):
 def test_utility_function_matches_are_equal():
     for match in matches.values():
         assert _matches_are_equal(match, match[::-1])
+    assert not _matches_are_equal(matches["first"], matches["second"])
+    assert not _matches_are_equal(matches["first"], matches["first_nanh"])
+    assert not _matches_are_equal(matches["second"], matches["none"])
 
 
 @pytest.mark.parametrize(
