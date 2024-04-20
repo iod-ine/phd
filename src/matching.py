@@ -41,41 +41,46 @@ def match_candidates(
     out = []
 
     for distance, (i, j) in sparse_distances:
-        if not (ground_truth_matched_mask[i] and candidates_matched_mask[j]) and (
-            np.isnan(ground_truth[i][2])
-            or abs(ground_truth[i][2] - candidates[j][2]) <= max_height_difference
+        if ground_truth_matched_mask[i] and candidates_matched_mask[j]:
+            continue
+
+        if (
+            not np.isnan(ground_truth[i][2])
+            and abs(ground_truth[i][2] - candidates[j][2]) > max_height_difference
         ):
-            if ground_truth_matched_mask[i]:
-                candidates_matched_mask[j] = True
-                out.append(
-                    {
-                        "ground_truth": None,
-                        "candidate": _ndarray_to_tuple(candidates[j]),
-                        "class": "FP",
-                        "distance": None,
-                    }
-                )
-            elif candidates_matched_mask[j]:
-                ground_truth_matched_mask[i] = True
-                out.append(
-                    {
-                        "ground_truth": _ndarray_to_tuple(ground_truth[i]),
-                        "candidate": None,
-                        "class": "FN",
-                        "distance": None,
-                    }
-                )
-            else:
-                ground_truth_matched_mask[i] = True
-                candidates_matched_mask[j] = True
-                out.append(
-                    {
-                        "ground_truth": _ndarray_to_tuple(ground_truth[i]),
-                        "candidate": _ndarray_to_tuple(candidates[j]),
-                        "class": "TP",
-                        "distance": distance,
-                    }
-                )
+            continue
+
+        if ground_truth_matched_mask[i]:
+            candidates_matched_mask[j] = True
+            out.append(
+                {
+                    "ground_truth": None,
+                    "candidate": _ndarray_to_tuple(candidates[j]),
+                    "class": "FP",
+                    "distance": None,
+                }
+            )
+        elif candidates_matched_mask[j]:
+            ground_truth_matched_mask[i] = True
+            out.append(
+                {
+                    "ground_truth": _ndarray_to_tuple(ground_truth[i]),
+                    "candidate": None,
+                    "class": "FN",
+                    "distance": None,
+                }
+            )
+        else:
+            ground_truth_matched_mask[i] = True
+            candidates_matched_mask[j] = True
+            out.append(
+                {
+                    "ground_truth": _ndarray_to_tuple(ground_truth[i]),
+                    "candidate": _ndarray_to_tuple(candidates[j]),
+                    "class": "TP",
+                    "distance": distance,
+                }
+            )
 
     out.extend(
         {
