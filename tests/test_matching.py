@@ -18,6 +18,20 @@ matches = {
             "distance": None,
         },
     ],
+    "first_nanh": [
+        {
+            "ground_truth": (0, 0, None),
+            "candidate": (0, 1, 3),
+            "class": "TP",
+            "distance": 1.0,
+        },
+        {
+            "ground_truth": None,
+            "candidate": (0, 2, 4),
+            "class": "FP",
+            "distance": None,
+        },
+    ],
     "second": [
         {
             "ground_truth": (0, 0, 5),
@@ -111,17 +125,4 @@ def test_match_candidates_with_nan_height():
         max_distance=5,
         max_height_difference=5,
     )
-    assert actual == [
-        {
-            "ground_truth": (0, 0, None),
-            "candidate": (0, 1, 3),
-            "class": "TP",
-            "distance": 1.0,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 2, 4),
-            "class": "FP",
-            "distance": None,
-        },
-    ]
+    assert actual == matches["first_nanh"]
