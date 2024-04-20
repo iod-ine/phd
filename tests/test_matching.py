@@ -136,6 +136,22 @@ def test_match_candidates_thresholds(
     assert _matches_are_equal(actual, expected)
 
 
+def test_order_of_candidates_does_not_matter():
+    direct = match_candidates(
+        ground_truth=np.array([[0, 0, 5]]),
+        candidates=np.array([[0, 1, 3], [0, 2, 4]]),
+        max_distance=10,
+        max_height_difference=10,
+    )
+    reversed = match_candidates(
+        ground_truth=np.array([[0, 0, 5]]),
+        candidates=np.array([[0, 2, 4], [0, 1, 3]]),
+        max_distance=10,
+        max_height_difference=10,
+    )
+    assert _matches_are_equal(direct, reversed)
+
+
 def test_match_candidates_with_nan_height():
     actual = match_candidates(
         ground_truth=np.array([[0, 0, np.nan]]),
