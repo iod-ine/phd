@@ -2,6 +2,11 @@ import numpy as np
 import scipy
 
 
+def _ndarray_to_tuple(array: np.ndarray) -> tuple:
+    """Convert an array to a tuple, replacing np.nan with None."""
+    return tuple(None if np.isnan(x) else x for x in array)
+
+
 def match_candidates(
     ground_truth: np.ndarray,
     candidates: np.ndarray,
@@ -35,9 +40,6 @@ def match_candidates(
     candidates_matched_mask = np.zeros(candidates.shape[0], dtype=bool)
     out = []
 
-    def ndarray_to_tuple(array: np.ndarray) -> tuple:
-        return tuple(None if np.isnan(x) else x for x in array)
-
     for distance, (i, j) in sparse_distances:
         if (
             np.isnan(ground_truth[i][2])
@@ -48,7 +50,7 @@ def match_candidates(
                 out.append(
                     {
                         "ground_truth": None,
-                        "candidate": ndarray_to_tuple(candidates[j]),
+                        "candidate": _ndarray_to_tuple(candidates[j]),
                         "class": "FP",
                         "distance": None,
                     }
@@ -57,7 +59,7 @@ def match_candidates(
                 ground_truth_matched_mask[i] = True
                 out.append(
                     {
-                        "ground_truth": ndarray_to_tuple(ground_truth[i]),
+                        "ground_truth": _ndarray_to_tuple(ground_truth[i]),
                         "candidate": None,
                         "class": "FN",
                         "distance": None,
@@ -68,8 +70,8 @@ def match_candidates(
                 candidates_matched_mask[j] = True
                 out.append(
                     {
-                        "ground_truth": ndarray_to_tuple(ground_truth[i]),
-                        "candidate": ndarray_to_tuple(candidates[j]),
+                        "ground_truth": _ndarray_to_tuple(ground_truth[i]),
+                        "candidate": _ndarray_to_tuple(candidates[j]),
                         "class": "TP",
                         "distance": distance,
                     }
