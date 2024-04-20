@@ -41,7 +41,7 @@ def match_candidates(
     out = []
 
     for distance, (i, j) in sparse_distances:
-        if (
+        if not (ground_truth_matched_mask[i] and candidates_matched_mask[j]) and (
             np.isnan(ground_truth[i][2])
             or abs(ground_truth[i][2] - candidates[j][2]) <= max_height_difference
         ):
