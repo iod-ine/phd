@@ -17,8 +17,8 @@ def match_candidates(
     """Match ground truth trees to candidates.
 
     Args:
-        ground_truth (np.ndarray): Array of shape (N, 2) with positions of the ground
-            truth trees.
+        ground_truth (np.ndarray): Array of shape (N, 3) with positions and heights of
+            the ground truth trees. The heights are allowed to be NaN.
         candidates (np.ndarray): Array of shape (M, 3) with positions and heights of
             detected trees.
         max_distance (float): Maximum distance between actual and potential trees to
