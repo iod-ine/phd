@@ -133,7 +133,7 @@ def test_match_candidates_thresholds(
         max_distance=max_distance,
         max_height_difference=max_height_difference,
     )
-    assert actual == expected
+    assert _matches_are_equal(actual, expected)
 
 
 def test_match_candidates_with_nan_height():
@@ -143,4 +143,4 @@ def test_match_candidates_with_nan_height():
         max_distance=5,
         max_height_difference=5,
     )
-    assert actual == matches["first_nanh"]
+    assert _matches_are_equal(actual, matches["first_nanh"])
