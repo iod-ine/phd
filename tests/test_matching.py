@@ -69,6 +69,24 @@ matches = {
 }
 
 
+def _matches_are_equal(first, second):
+    """A utility function to compare lists of candidates regardless of their order."""
+
+    def get_coord_tuple(match):
+        candidate = match["candidate"] or (0, 0, 0)
+        ground_truth = match["ground_truth"] or (0, 0, 0)
+        if ground_truth[-1] is None:
+            ground_truth = (ground_truth[0], ground_truth[1], -1)
+        return (*ground_truth, *candidate)
+
+    return sorted(first, key=get_coord_tuple) == sorted(second, key=get_coord_tuple)
+
+
+def test_utility_function_matches_are_equal():
+    for match in matches.values():
+        assert _matches_are_equal(match, match[::-1])
+
+
 @pytest.mark.parametrize(
     "max_distance,max_height_difference,expected",
     [
