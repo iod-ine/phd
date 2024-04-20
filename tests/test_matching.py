@@ -163,3 +163,68 @@ def test_match_candidates_with_nan_height():
         max_height_difference=5,
     )
     assert _matches_are_equal(actual, matches["first_nanh"])
+
+
+@pytest.mark.parametrize(
+    "ground_truth,candidates,expected",
+    [
+        pytest.param(
+            np.array([[0, 0, 1], [0, 2, 1]]),
+            np.array([[1, 0, 1], [1, 2, 1], [1, 1, 0]]),
+            [
+                {
+                    "ground_truth": (0, 0, 1),
+                    "candidate": (1, 0, 1),
+                    "class": "TP",
+                    "distance": 1.0,
+                },
+                {
+                    "ground_truth": (0, 2, 1),
+                    "candidate": (1, 2, 1),
+                    "class": "TP",
+                    "distance": 1.0,
+                },
+                {
+                    "ground_truth": None,
+                    "candidate": (1, 1, 0),
+                    "class": "FP",
+                    "distance": None,
+                },
+            ],
+            id="false_positives",
+        ),
+        pytest.param(
+            np.array([[0, 0, 1], [0, 1, 1], [0, 2, 1]]),
+            np.array([[1, 0, 1], [1, 2, 1]]),
+            [
+                {
+                    "ground_truth": (0, 0, 1),
+                    "candidate": (1, 0, 1),
+                    "class": "TP",
+                    "distance": 1.0,
+                },
+                {
+                    "ground_truth": (0, 2, 1),
+                    "candidate": (1, 2, 1),
+                    "class": "TP",
+                    "distance": 1.0,
+                },
+                {
+                    "ground_truth": (0, 1, 1),
+                    "candidate": None,
+                    "class": "FN",
+                    "distance": None,
+                },
+            ],
+            id="false_negatives",
+        ),
+    ],
+)
+def test_errors_are_not_duplicated(ground_truth, candidates, expected):
+    actual = match_candidates(
+        ground_truth=ground_truth,
+        candidates=candidates,
+        max_distance=5,
+        max_height_difference=5,
+    )
+    assert _matches_are_equal(actual, expected)
