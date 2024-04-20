@@ -29,7 +29,7 @@ def match_candidates(
     )
     indices = np.nonzero(distance_matrix <= max_distance)  # (ground_truths, candidates)
     distances = distance_matrix[indices]
-    sparse_distances = sorted((pair, d) for pair, d in zip(zip(*indices), distances))
+    sparse_distances = sorted((d, pair) for d, pair in zip(distances, zip(*indices)))
 
     ground_truth_matched_mask = np.zeros(ground_truth.shape[0], dtype=bool)
     candidates_matched_mask = np.zeros(candidates.shape[0], dtype=bool)
@@ -38,7 +38,7 @@ def match_candidates(
     def ndarray_to_tuple(array: np.ndarray) -> tuple:
         return tuple(None if np.isnan(x) else x for x in array)
 
-    for (i, j), distance in sparse_distances:
+    for distance, (i, j) in sparse_distances:
         if (
             np.isnan(ground_truth[i][2])
             or abs(ground_truth[i][2] - candidates[j][2]) <= max_height_difference
