@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import shapely
 
 import src.utils
 
@@ -27,3 +28,24 @@ def test_crop_by_other(other, expected):
     result = src.utils.crop_by_other(points, other)
 
     assert np.all(result == expected)
+
+
+def test_extract_points_from_matches(matches):
+    generator = src.utils.extract_points_from_matches(matches["first"])
+    assert next(generator) == {
+        "geometry": shapely.Point(0, 0),
+        "class": "TP_gt",
+        "height": 5,
+    }
+    assert next(generator) == {
+        "geometry": shapely.Point(0, 1),
+        "class": "TP",
+        "height": 3,
+    }
+    assert next(generator) == {
+        "geometry": shapely.Point(0, 2),
+        "class": "FP",
+        "height": 4,
+    }
+    with pytest.raises(StopIteration):
+        next(generator)
