@@ -3,71 +3,6 @@ import pytest
 
 from src.matching import match_candidates
 
-matches = {
-    "first": [
-        {
-            "ground_truth": (0, 0, 5),
-            "candidate": (0, 1, 3),
-            "class": "TP",
-            "distance": 1.0,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 2, 4),
-            "class": "FP",
-            "distance": None,
-        },
-    ],
-    "first_nanh": [
-        {
-            "ground_truth": (0, 0, None),
-            "candidate": (0, 1, 3),
-            "class": "TP",
-            "distance": 1.0,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 2, 4),
-            "class": "FP",
-            "distance": None,
-        },
-    ],
-    "second": [
-        {
-            "ground_truth": (0, 0, 5),
-            "candidate": (0, 2, 4),
-            "class": "TP",
-            "distance": 2.0,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 1, 3),
-            "class": "FP",
-            "distance": None,
-        },
-    ],
-    "none": [
-        {
-            "ground_truth": (0, 0, 5),
-            "candidate": None,
-            "class": "FN",
-            "distance": None,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 1, 3),
-            "class": "FP",
-            "distance": None,
-        },
-        {
-            "ground_truth": None,
-            "candidate": (0, 2, 4),
-            "class": "FP",
-            "distance": None,
-        },
-    ],
-}
-
 
 def _matches_are_equal(first, second):
     """A utility function to compare lists of candidates regardless of their order."""
@@ -82,7 +17,7 @@ def _matches_are_equal(first, second):
     return sorted(first, key=get_coord_tuple) == sorted(second, key=get_coord_tuple)
 
 
-def test_utility_function_matches_are_equal():
+def test_utility_function_matches_are_equal(matches):
     for match in matches.values():
         assert _matches_are_equal(match, match[::-1])
     assert not _matches_are_equal(matches["first"], matches["second"])
@@ -96,36 +31,37 @@ def test_utility_function_matches_are_equal():
         pytest.param(
             5,
             5,
-            matches["first"],
+            "first",
             id="all_within",
         ),
         pytest.param(
             5,
             1,
-            matches["second"],
+            "second",
             id="height_threshold_one",
         ),
         pytest.param(
             5,
             0,
-            matches["none"],
+            "none",
             id="height_threshold_all",
         ),
         pytest.param(
             1,
             5,
-            matches["first"],
+            "first",
             id="distance_threshold_one",
         ),
         pytest.param(
             0,
             5,
-            matches["none"],
+            "none",
             id="distance_threshold_all",
         ),
     ],
 )
 def test_match_candidates_thresholds(
+    matches,
     max_distance,
     max_height_difference,
     expected,
@@ -136,7 +72,7 @@ def test_match_candidates_thresholds(
         max_distance=max_distance,
         max_height_difference=max_height_difference,
     )
-    assert _matches_are_equal(actual, expected)
+    assert _matches_are_equal(actual, matches[expected])
 
 
 def test_order_of_candidates_does_not_matter():
@@ -155,7 +91,7 @@ def test_order_of_candidates_does_not_matter():
     assert _matches_are_equal(direct, reversed)
 
 
-def test_match_candidates_with_nan_height():
+def test_match_candidates_with_nan_height(matches):
     actual = match_candidates(
         ground_truth=np.array([[0, 0, np.nan]]),
         candidates=np.array([[0, 1, 3], [0, 2, 4]]),
