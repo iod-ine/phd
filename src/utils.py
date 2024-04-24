@@ -3,18 +3,17 @@
 from typing import Generator
 
 import numpy as np
+import scipy.spatial
 import shapely
 
 
 def crop_by_other(points: np.ndarray, other: np.ndarray) -> np.ndarray:
     """Crop points by the extent of other."""
-    crop_indices = np.nonzero(
-        (points[:, 0] >= other[:, 0].min())
-        & (points[:, 1] >= other[:, 1].min())
-        & (points[:, 0] <= other[:, 0].max())
-        & (points[:, 1] <= other[:, 1].max())
-    )
-    return points[crop_indices]
+    hull = scipy.spatial.ConvexHull(other[:, :2])
+    vertex_points = hull.points[hull.vertices]
+    delaunay = scipy.spatial.Delaunay(vertex_points)
+    within_hull = delaunay.find_simplex(points[:, :2]) >= 0
+    return points[within_hull]
 
 
 def extract_points_from_matches(matches: dict) -> Generator[dict, None, None]:

@@ -18,6 +18,11 @@ import src.utils
             np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
             id="bottom-left",
         ),
+        pytest.param(
+            np.array([[0, 0], [2, 2], [3, 2], [1, 0]]),
+            np.array([[0, 0], [1, 1], [2, 2], [1, 0], [2, 1], [3, 2]]),
+            id="skewed",
+        ),
     ],
 )
 def test_crop_by_other(other, expected):
@@ -27,7 +32,7 @@ def test_crop_by_other(other, expected):
 
     result = src.utils.crop_by_other(points, other)
 
-    assert np.all(result == expected)
+    assert np.all(np.sort(result, axis=0) == np.sort(expected, axis=0))
 
 
 def test_extract_points_from_matches(matches):
