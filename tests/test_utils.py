@@ -9,12 +9,12 @@ import src.utils
     "other,expected",
     [
         pytest.param(
-            np.array([[1, 1], [2, 2]]),
+            np.array([[1, 1], [1, 2], [2, 1], [2, 2]]),
             np.array([[1, 1], [1, 2], [2, 1], [2, 2]]),
             id="middle",
         ),
         pytest.param(
-            np.array([[-1, -1], [1, 1]]),
+            np.array([[-1, -1], [-1, 1], [1, 1], [1, -1]]),
             np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
             id="bottom-left",
         ),
