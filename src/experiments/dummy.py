@@ -113,6 +113,7 @@ if __name__ == "__main__":
         # limit_train_batches=100,
         max_epochs=100,
         overfit_batches=10,
+        logger=L.pytorch.loggers.MLFlowLogger(),
     )
     trainer.fit(
         model=autoencoder,
