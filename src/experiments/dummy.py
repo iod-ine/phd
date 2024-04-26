@@ -7,10 +7,22 @@ import torchvision
 
 
 class LitAutoEncoder(L.LightningModule):
-    def __init__(self, encoder, decoder):
+    def __init__(self, bottleneck_size: int = 64):
         super().__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        self.bottleneck_size = bottleneck_size
+
+        self.encoder = nn.Sequential(
+            nn.Linear(28 * 28, self.bottleneck_size),
+            nn.ReLU(),
+            nn.Linear(self.bottleneck_size, 3),
+        )
+        self.decoder = nn.Sequential(
+            nn.Linear(3, self.bottleneck_size),
+            nn.ReLU(),
+            nn.Linear(self.bottleneck_size, 28 * 28),
+        )
+
+        self.save_hyperparameters()
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -91,19 +103,7 @@ class MNISTDataModule(L.LightningDataModule):
 
 
 if __name__ == "__main__":
-    encoder = nn.Sequential(
-        nn.Linear(28 * 28, 64),
-        nn.ReLU(),
-        nn.Linear(64, 3),
-    )
-
-    decoder = nn.Sequential(
-        nn.Linear(3, 64),
-        nn.ReLU(),
-        nn.Linear(64, 28 * 28),
-    )
-
-    autoencoder = LitAutoEncoder(encoder, decoder)
+    autoencoder = LitAutoEncoder(bottleneck_size=64)
     mnist = MNISTDataModule(
         data_dir="data/raw/mnist",
         batch_size=64,
