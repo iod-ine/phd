@@ -1,8 +1,11 @@
 """A dummy experiment to figure out launching on different platforms."""
 
+import tempfile
+
 import lightning as L
 import torch
 import torch.nn as nn
+import torchinfo
 import torchvision
 
 
@@ -30,7 +33,11 @@ class LitAutoEncoder(L.LightningModule):
         z = self.encoder(x)
         x_hat = self.decoder(z)
         loss = nn.functional.mse_loss(x_hat, x)
-        self.log("loss/train", loss.detach())
+
+        # self.logger is the Lightning wrapper around MLflow,
+        # self.logger.experiment is the MlflowClient instance
+        self.logger.log_metrics({"loss/train": loss.item()}, step=self.global_step)
+
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -39,7 +46,7 @@ class LitAutoEncoder(L.LightningModule):
         z = self.encoder(x)
         x_hat = self.decoder(z)
         loss = nn.functional.mse_loss(x_hat, x)
-        self.log("loss/val", loss.detach(), prog_bar=True)
+        self.logger.log_metrics({"loss/val": loss.item()}, step=self.global_step)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
@@ -109,11 +116,27 @@ if __name__ == "__main__":
         batch_size=64,
     )
 
+    logger = L.pytorch.loggers.MLFlowLogger(
+        experiment_name="lightning_logs",
+        tags={
+            "test": True,
+            "local": True,
+        },
+        log_model=True,
+    )
+
+    summary = torchinfo.summary(autoencoder)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = f"{tmp}/model_summary.txt"
+        with open(tmp, "w") as f:
+            f.write(str(summary))
+        logger.experiment.log_artifact(run_id=logger.run_id, local_path=tmp)
+
     trainer = L.Trainer(
-        # limit_train_batches=100,
-        max_epochs=100,
+        limit_train_batches=100,
+        max_epochs=50,
         overfit_batches=10,
-        logger=L.pytorch.loggers.MLFlowLogger(),
+        logger=logger,
     )
     trainer.fit(
         model=autoencoder,
