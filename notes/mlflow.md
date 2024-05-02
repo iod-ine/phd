@@ -40,3 +40,24 @@ os.environ["MLFLOW_TRACKING_URI"] = userdata.get("mlflow-uri")
 os.environ["MLFLOW_TRACKING_USERNAME"] = userdata.get("mlflow-username")
 os.environ["MLFLOW_TRACKING_PASSWORD"] = userdata.get("mlflow-password")
 ```
+
+---
+
+### Server setup
+
+#### `nginx` configuration
+
+```nginx
+# /etc/nginx/sites-available/mlflow
+server {
+ listen 8080;
+ server_name 123.456.789.10;
+ client_max_body_size 20M;  # Increase to allow logging model checkpoints
+
+ location / {
+     auth_basic "Protected Area";
+     auth_basic_user_file /etc/nginx/.htpasswd;  # Path to the password file
+     proxy_pass http://127.0.0.1:5000;
+ }
+}
+```
