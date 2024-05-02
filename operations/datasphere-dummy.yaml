@@ -1,0 +1,15 @@
+# https://yandex.cloud/ru/docs/datasphere/concepts/jobs/
+# poetry run datasphere project job execute -p bt1pxxxxxxxxxxxxxxxx -c configs/dummy.yaml
+
+name: dummy-experiment
+desc: A dummy experiment
+cmd: python -m src.experiments.dummy
+env:
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: operations/requirements.txt
+    local-paths:
+      - src/
+      - .env
+cloud-instance-type: g1.1
