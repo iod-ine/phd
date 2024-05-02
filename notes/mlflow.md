@@ -45,10 +45,20 @@ os.environ["MLFLOW_TRACKING_PASSWORD"] = userdata.get("mlflow-password")
 
 ### Server setup
 
+- Fresh VM setup: `apt update && apt install git nginx tmux`
+- Libraries for Python install: `apt install python3-pip libssl-dev libncurses-dev libsqlite3-dev libbz2-dev libreadline6-dev libffi-dev liblzma-dev`
+- Install `pyenv`: `curl https://pyenv.run | bash`
+- Install Python: `pyenv install 3.10.13`, `pyenv global 3.10.13`
+- Install MLflow: `pip install mlflow`
+- Start MLflow: `mlflow server --backend-store-uri sqlite:///mlflow.db`
+- Setup password: `echo "username:$(openssl passwd -apr1)" >> /etc/nginx/.htpasswd`
+- Setup site: `vim /etc/nginx/sites-available/mlflow` (config below)
+- Enable site: `ln -s /etc/nginx/sites-available/mlflow /etc/nginx/sites-enabled/`
+- Restart service: `systemctl restart nginx`
+
 #### `nginx` configuration
 
 ```nginx
-# /etc/nginx/sites-available/mlflow
 server {
  listen 8080;
  server_name 123.456.789.10;
