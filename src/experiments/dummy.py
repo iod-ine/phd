@@ -1,7 +1,9 @@
 """A dummy experiment to figure out launching on different platforms."""
 
+import os
 import tempfile
 
+import dotenv
 import lightning as L
 import torch
 import torch.nn as nn
@@ -110,6 +112,8 @@ class MNISTDataModule(L.LightningDataModule):
 
 
 if __name__ == "__main__":
+    assert dotenv.load_dotenv(override=True), "Unable to load .env"
+
     autoencoder = LitAutoEncoder(bottleneck_size=64)
     mnist = MNISTDataModule(
         data_dir="data/raw/mnist",
@@ -117,10 +121,11 @@ if __name__ == "__main__":
     )
 
     logger = L.pytorch.loggers.MLFlowLogger(
+        tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),  # Default was set on import
         experiment_name="lightning_logs",
         tags={
-            "test": True,
-            "local": True,
+            "test": "yes",
+            "local": "no",
         },
         log_model=True,
     )
