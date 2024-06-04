@@ -66,4 +66,24 @@ def matches():
                 "distance": None,
             },
         ],
+        "none_nanh": [
+            {
+                "ground_truth": (0, 0, None),
+                "candidate": None,
+                "class": "FN",
+                "distance": None,
+            },
+            {
+                "ground_truth": None,
+                "candidate": (0, 1, 3),
+                "class": "FP",
+                "distance": None,
+            },
+            {
+                "ground_truth": None,
+                "candidate": (0, 2, 4),
+                "class": "FP",
+                "distance": None,
+            },
+        ],
     }

@@ -100,6 +100,15 @@ def test_match_candidates_with_nan_height(matches):
     )
     assert _matches_are_equal(actual, matches["first_nanh"])
 
+    actual = match_candidates(
+        ground_truth=np.array([[0, 0, np.nan]]),
+        candidates=np.array([[0, 1, 3], [0, 2, 4]]),
+        max_distance=0,
+        max_height_difference=5,
+    )
+    assert _matches_are_equal(actual, matches["none_nanh"])
+
+
 
 @pytest.mark.parametrize(
     "ground_truth,candidates,expected",

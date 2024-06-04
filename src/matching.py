@@ -84,7 +84,7 @@ def match_candidates(
 
     out.extend(
         {
-            "ground_truth": tuple(point),
+            "ground_truth": _ndarray_to_tuple(point),
             "candidate": None,
             "class": "FN",
             "distance": None,
