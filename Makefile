@@ -1,7 +1,8 @@
 greet:
 	@echo "Commands:"
 	@echo "  data: Fetch the datasets"
-	@echo "  setup-python: Setup environment and a Jupyter kernel"
+	@echo "  test: Run tests"
+	@echo "  setup-python: Setup the environment and a Jupyter kernel"
 	@echo "  teardown-python: Remove the Jupyter kernel and the environment"
 
 
