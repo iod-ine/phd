@@ -11,11 +11,11 @@ test:
 
 
 data: data/raw/lysva/field_survey.geojson
-data: data/raw/trees/Birch/birch_13.las
+data: data/raw/trees/Birch/birch_69.las
 data: data/external/newfor/Benchmark_Guidelines_NEWFOR.pdf
 data/raw/lysva/field_survey.geojson:
 	poetry run kaggle datasets download -p data/raw/lysva --unzip sentinel3734/tree-detection-lidar-rgb
-data/raw/trees/Birch/birch_13.las:
+data/raw/trees/Birch/birch_69.las:
 	poetry run kaggle datasets download -p data/raw/trees --unzip sentinel3734/uav-point-clouds-of-individual-trees
 data/external/newfor/Benchmark_Guidelines_NEWFOR.pdf:
 	poetry run kaggle datasets download -p data/external/newfor --unzip  sentinel3734/newfor-tree-detection-benchmark
