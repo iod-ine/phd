@@ -40,3 +40,26 @@ dev = [
     "datasphere>=0.7.4",
     "debugpy>=1.8.2",
 ]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "ARG",
+    "W",
+    "I",
+    "Q",
+    "N",
+    "RET",
+    "SIM",
+    "PD",
+    "NPY",
+    "PERF",
+    "PL",
+    "TRY",
+    "FURB",
+    "RUF",
+]
