@@ -63,3 +63,6 @@ select = [
     "FURB",
     "RUF",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"src/experiments/*" = ["N812"]
