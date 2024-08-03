@@ -24,14 +24,14 @@ class LASClassCode(enum.IntEnum):
     HIGH_NOISE = 18
 
 
-def normalize_cloud_height(las):
-    out = las.xyz.copy()
+def normalize_cloud_height(las, *, interpolation_method="nearest"):
     assert np.any(las.classification == LASClassCode.GROUND)
+    out = las.xyz.copy()
     ground_level = scipy.interpolate.griddata(
         points=las.xyz[las.classification == LASClassCode.GROUND, :2],
         values=las.xyz[las.classification == LASClassCode.GROUND, 2],
         xi=las.xyz[:, :2],
-        method="nearest",
+        method=interpolation_method,
     )
     out[:, 2] -= ground_level
-    return out
+    return np.clip(out, a_min=0, a_max=np.inf)
