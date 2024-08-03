@@ -12,13 +12,16 @@ test:
 
 data: data/raw/lysva/field_survey.geojson
 data: data/raw/trees/Birch/birch_69.las
+data: data/raw/full-images/ortho.tif
 data: data/external/newfor/Benchmark_Guidelines_NEWFOR.pdf
 data/raw/lysva/field_survey.geojson:
 	pdm run kaggle datasets download -p data/raw/lysva --unzip sentinel3734/tree-detection-lidar-rgb
 data/raw/trees/Birch/birch_69.las:
 	pdm run kaggle datasets download -p data/raw/trees --unzip sentinel3734/uav-point-clouds-of-individual-trees
+data/raw/full-images/ortho.tif:
+	pdm run kaggle datasets download -p data/raw/full-lysva --unzip sentinel3734/tree-detection-lidar-rgb-full-images
 data/external/newfor/Benchmark_Guidelines_NEWFOR.pdf:
-	pdm run kaggle datasets download -p data/external/newfor --unzip  sentinel3734/newfor-tree-detection-benchmark
+	pdm run kaggle datasets download -p data/external/newfor --unzip sentinel3734/newfor-tree-detection-benchmark
 
 
 setup-python:
