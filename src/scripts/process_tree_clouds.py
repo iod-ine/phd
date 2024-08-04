@@ -25,6 +25,10 @@ if __name__ == "__main__":
 
             rgb = np.stack([c for c in dataset.sample(las.xyz[:, :2])])
 
+            if np.all(rgb == 255):  # noqa: PLR2004
+                tqdm.tqdm.write(f"{las_file.name} out of bounds of the orthophoto")
+                continue
+
             las.red[:] = rgb[:, 0]
             las.green[:] = rgb[:, 1]
             las.blue[:] = rgb[:, 2]
