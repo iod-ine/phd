@@ -2,6 +2,7 @@
 **/*.geojson
 **/*.tif
 **/*.las
+**/*.laz
 external/newfor/
 *.qgz
 *.gpkg
