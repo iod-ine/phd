@@ -3,7 +3,7 @@
 **/*.tif
 **/*.las
 **/*.laz
-external/newfor/
+external/*
 *.qgz
 *.gpkg
 **/*.aux.xml
