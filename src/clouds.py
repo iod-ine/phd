@@ -1,3 +1,5 @@
+"""Functions for manipulating point clouds."""
+
 import enum
 from typing import Optional
 
@@ -7,6 +9,8 @@ import scipy.interpolate
 
 
 class LASClassificationCode(enum.IntEnum):
+    """Class names used in LAS files."""
+
     NEVER_CLASSIFIED = 0
     UNASSIGNED = 1
     GROUND = 2
@@ -26,7 +30,12 @@ class LASClassificationCode(enum.IntEnum):
     HIGH_NOISE = 18
 
 
-def normalize_cloud_height(las, *, interpolation_method="nearest"):
+def normalize_cloud_height(
+    las: laspy.LasData,
+    *,
+    interpolation_method: str = "nearest",
+):
+    """Subtract the ground level from all points in a LasData object."""
     assert np.any(las.classification == LASClassificationCode.GROUND)
     out = las.xyz.copy()
     ground_level = scipy.interpolate.griddata(
@@ -39,7 +48,14 @@ def normalize_cloud_height(las, *, interpolation_method="nearest"):
     return np.clip(out, a_min=0, a_max=np.inf)
 
 
-def create_regular_grid(xyzs, ncols, dx, dy, add_noise=True):
+def create_regular_grid(
+    xyzs: list[np.ndarray],
+    ncols: int,
+    dx: float,
+    dy: float,
+    add_noise: bool = True,
+):
+    """Arrange a collection of point clouds into a single cloud in a regular grid."""
     grid, indices = [], []
 
     for i, xyz in enumerate(xyzs):
