@@ -58,6 +58,7 @@ select = [
     "ARG",
     "W",
     "I",
+    "D",
     "Q",
     "N",
     "RET",
