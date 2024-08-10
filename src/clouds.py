@@ -4,7 +4,7 @@ import numpy as np
 import scipy.interpolate
 
 
-class LASClassCode(enum.IntEnum):
+class LASClassificationCode(enum.IntEnum):
     NEVER_CLASSIFIED = 0
     UNASSIGNED = 1
     GROUND = 2
@@ -25,11 +25,11 @@ class LASClassCode(enum.IntEnum):
 
 
 def normalize_cloud_height(las, *, interpolation_method="nearest"):
-    assert np.any(las.classification == LASClassCode.GROUND)
+    assert np.any(las.classification == LASClassificationCode.GROUND)
     out = las.xyz.copy()
     ground_level = scipy.interpolate.griddata(
-        points=las.xyz[las.classification == LASClassCode.GROUND, :2],
-        values=las.xyz[las.classification == LASClassCode.GROUND, 2],
+        points=las.xyz[las.classification == LASClassificationCode.GROUND, :2],
+        values=las.xyz[las.classification == LASClassificationCode.GROUND, 2],
         xi=las.xyz[:, :2],
         method=interpolation_method,
     )
