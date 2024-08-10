@@ -54,8 +54,19 @@ def create_regular_grid(
     dx: float,
     dy: float,
     add_noise: bool = True,
-):
-    """Arrange a collection of point clouds into a single cloud in a regular grid."""
+) -> tuple[np.ndarray, np.ndarray]:
+    """Arrange a collection of point clouds into a single cloud in a regular grid.
+
+    Args:
+        xyzs: List of point coordinates of clouds to combine.
+        ncols: Number of columns in the grid.
+        dx: Step in the X direction.
+        dy: Step in the Y direction.
+        add_noise: Whether to add normal noise to the steps.
+
+    Returns:
+        pos, y: Coordinates, labels (indices of the LasData objects in las_list).
+    """
     grid, indices = [], []
     rng = np.random.default_rng()
 
