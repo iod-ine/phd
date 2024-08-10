@@ -35,3 +35,17 @@ def normalize_cloud_height(las, *, interpolation_method="nearest"):
     )
     out[:, 2] -= ground_level
     return np.clip(out, a_min=0, a_max=np.inf)
+
+
+def create_regular_grid(xyzs, ncols, dx, dy, add_noise=True):
+    grid, indices = [], []
+
+    for i, xyz in enumerate(xyzs):
+        means = xyz.mean(axis=0, keepdims=True)
+        means[0][-1] = 0  # Don't recenter Z
+        x = i % ncols * dx + np.random.normal(loc=0.0, scale=1.0) * add_noise
+        y = i // ncols * dy + np.random.normal(loc=0.0, scale=1.0) * add_noise
+        grid.append(xyz - means + np.array([[x, y, 0]]))
+        indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
+
+    return np.vstack(grid), np.hstack(indices)
