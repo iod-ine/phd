@@ -80,14 +80,12 @@ def numpy_to_las(
     """Convert a Numpy array of points into a LasData object.
 
     Args:
-    ----
         xyz: An array of point coordinates with shape (N, 3).
         color: An array of colors for every point, shape (N, 3), in range [0, 255].
         scale: Scale used to store the coordinates.
         extra_dim: An extra dimension to add to the points, shape (N,).
 
     Notes:
-    -----
         https://laspy.readthedocs.io/en/latest/intro.html
 
     """
