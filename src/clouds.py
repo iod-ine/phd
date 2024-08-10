@@ -57,12 +57,13 @@ def create_regular_grid(
 ):
     """Arrange a collection of point clouds into a single cloud in a regular grid."""
     grid, indices = [], []
+    rng = np.random.default_rng()
 
     for i, xyz in enumerate(xyzs):
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
-        x = i % ncols * dx + np.random.normal(loc=0.0, scale=1.0) * add_noise
-        y = i // ncols * dy + np.random.normal(loc=0.0, scale=1.0) * add_noise
+        x = i % ncols * dx + rng.normal(loc=0.0, scale=1.0) * add_noise
+        y = i // ncols * dy + rng.normal(loc=0.0, scale=1.0) * add_noise
         grid.append(xyz - means + np.array([[x, y, 0]]))
         indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
 
