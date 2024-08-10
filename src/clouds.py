@@ -74,21 +74,27 @@ def numpy_to_las(
     *,
     color: Optional[np.ndarray] = None,
     scale: float = 0.0001,
+    extra_dim: Optional[np.ndarray] = None,
 ) -> laspy.LasData:
     """Convert a Numpy array of points into a LasData object.
 
     Args:
+    ----
         xyz: An array of point coordinates with shape (N, 3).
         color: An array of colors for every point, shape (N, 3), in range [0, 255].
         scale: Scale used to store the coordinates.
+        extra_dim: An extra dimension to add to the points, shape (N,).
+
+    Notes:
+    -----
+        https://laspy.readthedocs.io/en/latest/intro.html
 
     """
-
     points = laspy.ScaleAwarePointRecord.zeros(
         xyz.shape[0],
         point_format=laspy.PointFormat(3),
         scales=[scale] * 3,
-        offsets=[0] * 3,
+        offsets=np.min(xyz, axis=0),
     )
     points.x[:] = xyz[:, 0]
     points.y[:] = xyz[:, 1]
@@ -97,7 +103,14 @@ def numpy_to_las(
         points.red[:] = color[:, 0]
         points.green[:] = color[:, 1]
         points.blue[:] = color[:, 2]
-    return laspy.LasData(
+
+    las = laspy.LasData(
         header=laspy.LasHeader(),
         points=points,
     )
+
+    if extra_dim is not None:
+        las.add_extra_dim(laspy.ExtraBytesParams(name="extra", type=extra_dim.dtype))
+        las.extra = extra_dim
+
+    return las
