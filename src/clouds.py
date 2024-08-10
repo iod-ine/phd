@@ -1,5 +1,7 @@
 import enum
+from typing import Optional
 
+import laspy
 import numpy as np
 import scipy.interpolate
 
@@ -49,3 +51,37 @@ def create_regular_grid(xyzs, ncols, dx, dy, add_noise=True):
         indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
 
     return np.vstack(grid), np.hstack(indices)
+
+
+def numpy_to_las(
+    xyz: np.ndarray,
+    *,
+    color: Optional[np.ndarray] = None,
+    scale: float = 0.0001,
+) -> laspy.LasData:
+    """Convert a Numpy array of points into a LasData object.
+
+    Args:
+        xyz: An array of point coordinates with shape (N, 3).
+        color: An array of colors for every point, shape (N, 3), in range [0, 255].
+        scale: Scale used to store the coordinates.
+
+    """
+
+    points = laspy.ScaleAwarePointRecord.zeros(
+        xyz.shape[0],
+        point_format=laspy.PointFormat(3),
+        scales=[scale] * 3,
+        offsets=[0] * 3,
+    )
+    points.x[:] = xyz[:, 0]
+    points.y[:] = xyz[:, 1]
+    points.z[:] = xyz[:, 2]
+    if color is not None:
+        points.red[:] = color[:, 0]
+        points.green[:] = color[:, 1]
+        points.blue[:] = color[:, 2]
+    return laspy.LasData(
+        header=laspy.LasHeader(),
+        points=points,
+    )
