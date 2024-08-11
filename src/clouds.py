@@ -124,3 +124,39 @@ def numpy_to_las(
         las.extra = extra_dim
 
     return las
+
+
+def extract_las_features(
+    las: laspy.LasData,
+    features_to_extract: Optional[list[str]] = None,
+) -> np.ndarray:
+    """Extract a set of features from the LAS file.
+
+    Args:
+        las: The LAS to extract features from.
+        features_to_extract: List of features to extract (have to be dimensions of the
+            LAS file).
+
+    Returns:
+        features: An array of features shaped (N, num_features).
+
+    Notes:
+        See https://laspy.readthedocs.io/en/latest/intro.html#point-records for possible
+        dimensions that can be extracted depending on the point format of the file. The
+        default set includes Intensity, Return number, Number of returns, and
+        Classification, in that order.
+
+    """
+    features_to_extract = features_to_extract or [
+        "intensity",
+        "return_number",
+        "number_of_returns",
+        "classification",
+    ]
+    features = np.empty(
+        shape=(las.header.point_count, len(features_to_extract)),
+        dtype=np.float32,
+    )
+    for i, feature in enumerate(features_to_extract):
+        features[:, i] = las[feature]
+    return features
