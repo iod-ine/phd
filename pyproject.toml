@@ -72,6 +72,8 @@ select = [
     "RUF",
 ]
 
+ignore = ["PLR0913"]
+
 [tool.ruff.lint.per-file-ignores]
 "src/experiments/*" = ["N812"]
 
