@@ -75,3 +75,24 @@ class PointNet2SemanticSegmentor(torch.nn.Module):
             pos=pos_in,
             edge_index=torch.empty((2, 0), dtype=torch.int64),
         )
+
+
+if __name__ == "__main__":
+    s3dis = torch_geometric.datasets.S3DIS(root="data/external/S3DIS/")
+    loader = torch_geometric.loader.DataLoader(s3dis, batch_size=4, shuffle=True)
+    batch = next(iter(loader))
+    model = PointNet2SemanticSegmentor(num_features=6, num_classes=13)
+
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+
+    print("Overfitting a single batch:")
+
+    model.train()
+    for i in range(20):
+        pred = model(batch)
+        loss = criterion(pred, batch.y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        print(f"  At iteration {i:>02} loss is {loss.item():.4f}")
