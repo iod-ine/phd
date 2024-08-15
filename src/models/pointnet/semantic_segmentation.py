@@ -16,19 +16,25 @@ class PointNet2Segmentor(torch.nn.Module):
         self.set_abstraction_0 = SetAbstraction(
             ratio=0.5,
             r=0.2,
-            local_nn=torch_geometric.nn.MLP([self.n_features + 3, 64, 64, 128]),
+            local_nn=torch_geometric.nn.MLP([self.n_features + 3, 64, 128, 256]),
         )
         self.set_abstraction_1 = SetAbstraction(
             ratio=0.25,
             r=0.4,
-            local_nn=torch_geometric.nn.MLP([128 + 3, 128, 128, 256]),
+            local_nn=torch_geometric.nn.MLP([256 + 3, 512, 1024, 1024]),
         )
         self.unit_point_net_0 = torch_geometric.nn.PointNetConv(
-            local_nn=torch_geometric.nn.MLP([256 + 128 + 3, 256, 256, 128]),
+            local_nn=torch_geometric.nn.MLP(
+                channel_list=[1024 + 256 + 3, 1024, 512, 256],
+                bias=False,
+            ),
             add_self_loops=False,
         )
         self.unit_point_net_1 = torch_geometric.nn.PointNetConv(
-            local_nn=torch_geometric.nn.MLP([128 + self.n_features + 3, 128, 64, 1]),
+            local_nn=torch_geometric.nn.MLP(
+                channel_list=[256 + self.n_features + 3, 256, 128, 64, 1],
+                bias=False,
+            ),
             add_self_loops=False,
         )
 
