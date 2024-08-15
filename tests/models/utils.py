@@ -1,11 +1,14 @@
 """Helper functions to test models."""
 
+from typing import Callable
+
 import torch
 import torch_geometric
 
 
 def assert_parameters_change_after_learning_step(
     model: torch.nn.Module,
+    criterion: Callable,
     example: torch_geometric.data.Data,
 ):
     """If the parameters are not frozen, they should change after a learning step."""
@@ -15,8 +18,8 @@ def assert_parameters_change_after_learning_step(
         (name, data.detach().clone()) for name, data in model.named_parameters()
     ]
 
-    pred = model(example).pred
-    loss = torch.nn.functional.mse_loss(pred.flatten().relu(), example.y)
+    pred = model(example)
+    loss = criterion(pred, example.y)
     loss.backward()
     optimizer.step()
 
