@@ -13,8 +13,8 @@ class PointNet2SemanticSegmentor(torch.nn.Module):
         """Create a new PointNet++ semantic segmentor."""
         super().__init__()
 
-        self.n_features = num_features
-        self.n_classes = num_classes
+        self.num_features = num_features
+        self.num_classes = num_classes
         self.set_abstraction_0 = SetAbstraction(
             ratio=0.5,
             r=0.2,
@@ -26,22 +26,26 @@ class PointNet2SemanticSegmentor(torch.nn.Module):
             ratio=0.25,
             r=0.4,
             local_nn=torch_geometric.nn.MLP(
-                channel_list=[256 + 3, 512, 1024, 1024],
+                channel_list=[256 + 3, 512, 1024, 2048],
             ),
         )
         self.unit_point_net_0 = torch_geometric.nn.PointNetConv(
             local_nn=torch_geometric.nn.MLP(
-                channel_list=[1024 + 256 + 3, 1024, 512, 256],
+                channel_list=[2048 + 256 + 3, 2048, 1024, 512],
                 bias=False,
             ),
             add_self_loops=True,
         )
         self.unit_point_net_1 = torch_geometric.nn.PointNetConv(
             local_nn=torch_geometric.nn.MLP(
-                channel_list=[256 + self.n_features + 3, 256, 128, 64, num_classes],
+                channel_list=[512 + num_features + 3, 512, 256, 128],
                 bias=False,
             ),
             add_self_loops=True,
+        )
+        self.classifier = torch_geometric.nn.MLP(
+            channel_list=[128, 64, 32, num_classes],
+            bias=False,
         )
 
     def forward(self, data):
@@ -70,11 +74,12 @@ class PointNet2SemanticSegmentor(torch.nn.Module):
             batch_y=batch_in,
             k=3,
         )
-        return self.unit_point_net_1(
+        x_3 = self.unit_point_net_1(
             x=torch.cat([x_2_interpolated, x_in], dim=1),
             pos=pos_in,
             edge_index=torch.empty((2, 0), dtype=torch.int64),
         )
+        return self.classifier(x_3)
 
 
 if __name__ == "__main__":
