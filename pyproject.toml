@@ -28,6 +28,7 @@ dependencies = [
     "h5py>=3.11.0",
     "torch-cluster @ https://data.pyg.org/whl/torch-2.3.0%2Bcpu/torch_cluster-1.6.3-cp310-cp310-macosx_10_9_universal2.whl ; platform_system == 'Darwin'",
     "lazrs>=0.6.1",
+    "kaggle>=1.6.17",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
