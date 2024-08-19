@@ -10,7 +10,7 @@ class IndividualTreesDataset(InMemoryDataset):
         """Create a new IndividualTreesDataset instance."""
         super().__init__(root, transform, pre_transform, pre_filter)
 
-    @property
+    @functools.cached_property
     def raw_file_names(self):
         """List of files that need to be found in raw_dir to skip the download."""
         return list(
@@ -27,7 +27,7 @@ class IndividualTreesDataset(InMemoryDataset):
             )
         )
 
-    @property
+    @functools.cached_property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
         pass
