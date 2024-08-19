@@ -1,14 +1,32 @@
 """A torch_geometric wrapper for the individual trees dataset."""
 
-from torch_geometric.data import InMemoryDataset
+import functools
+import itertools
+
+import kaggle
+import laspy
+import numpy as np
+import torch
+import torch_geometric
+
+import src.clouds
 
 
-class IndividualTreesDataset(InMemoryDataset):
-    """"""
+class IndividualTreesDataset(torch_geometric.data.InMemoryDataset):
+    """Individual trees in UAV LiDAR point clouds dataset."""
 
-    def __init__(self, root, transform=None, pre_transform=None, pre_filter=None):
+    def __init__(
+        self,
+        root,
+        las_features=None,
+        transform=None,
+        pre_transform=None,
+        pre_filter=None,
+    ):
         """Create a new IndividualTreesDataset instance."""
+        self.las_features = las_features
         super().__init__(root, transform, pre_transform, pre_filter)
+        self.load(self.processed_paths[0])
 
     @functools.cached_property
     def raw_file_names(self):
@@ -30,7 +48,7 @@ class IndividualTreesDataset(InMemoryDataset):
     @functools.cached_property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
-        pass
+        return ["full.pt"]
 
     def download(self):
         """Download raw data into raw_dir."""
@@ -42,4 +60,15 @@ class IndividualTreesDataset(InMemoryDataset):
 
     def process(self):
         """Process raw data and save it to processed_dir."""
-        pass
+        data_list = []
+        for i, path in enumerate(self.raw_paths):
+            las = laspy.read(path)
+            features = src.clouds.extract_las_features(las, self.las_features)
+            data = torch_geometric.data.Data(
+                pos=torch.from_numpy(las.xyz.astype(np.float32)),
+                x=torch.from_numpy(features),
+                y=torch.zeros(len(las)),
+            )
+            data_list.append(data)
+
+        self.save(data_list, self.processed_paths[0])
