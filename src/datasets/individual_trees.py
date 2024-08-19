@@ -11,6 +11,11 @@ import torch_geometric
 
 import src.clouds
 
+# NOTE: This implementation is sort of useless at the moment.
+# It might be easily converted to a species classification dataset.
+# To make it useful for tree instance segmentation, trees need to be
+# combined into patches of synthetic forest. It can be done on the fly,
+# but probably not with the InMemoryDataset parent.
 
 class IndividualTreesDataset(torch_geometric.data.InMemoryDataset):
     """Individual trees in UAV LiDAR point clouds dataset."""
