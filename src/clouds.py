@@ -49,36 +49,41 @@ def normalize_cloud_height(
 
 
 def create_regular_grid(
-    xyzs: list[np.ndarray],
+    las_list: list[laspy.LasData],
     ncols: int,
     dx: float,
     dy: float,
     add_noise: bool = True,
+    features_to_extract: Optional[list[str]] = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Arrange a collection of point clouds into a single cloud in a regular grid.
 
     Args:
-        xyzs: List of point coordinates of clouds to combine.
+        las_list: List of LAS objects to combine.
         ncols: Number of columns in the grid.
         dx: Step in the X direction.
         dy: Step in the Y direction.
         add_noise: Whether to add normal noise to the steps.
+        features_to_extract: List of features to extract (have to be dimensions of the
+            LAS files).
 
     Returns:
-        pos, y: Coordinates, labels (indices of the LasData objects in las_list).
+        pos, x, y: Coordinates, features, labels (indices of the objects in las_list).
     """
-    grid, indices = [], []
+    coords, features, indices = [], [], []
     rng = np.random.default_rng()
 
-    for i, xyz in enumerate(xyzs):
+    for i, las in enumerate(las_list):
+        xyz = las.xyz
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
         x = i % ncols * dx + rng.normal(loc=0.0, scale=1.0) * add_noise
         y = i // ncols * dy + rng.normal(loc=0.0, scale=1.0) * add_noise
-        grid.append(xyz - means + np.array([[x, y, 0]]))
+        coords.append(xyz - means + np.array([[x, y, 0]]))
+        features.append(extract_las_features(las, features_to_extract))
         indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
 
-    return np.vstack(grid), np.hstack(indices)
+    return np.vstack(coords), np.vstack(features), np.hstack(indices)
 
 
 def numpy_to_las(
