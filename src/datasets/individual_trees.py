@@ -2,33 +2,24 @@
 
 import functools
 import itertools
+from typing import Callable, Optional
 
 import kaggle
-import laspy
-import numpy as np
-import torch
 import torch_geometric
 
-import src.clouds
 
-# NOTE: This implementation is sort of useless at the moment.
-# It might be easily converted to a species classification dataset.
-# To make it useful for tree instance segmentation, trees need to be
-# combined into patches of synthetic forest. It can be done on the fly,
-# but probably not with the InMemoryDataset parent.
-
-class IndividualTreesDataset(torch_geometric.data.InMemoryDataset):
-    """Individual trees in UAV LiDAR point clouds dataset."""
+class IndividualTreesBase(torch_geometric.data.InMemoryDataset):
+    """Base class for creating datasets based on the individual trees dataset."""
 
     def __init__(
         self,
-        root,
-        las_features=None,
-        transform=None,
-        pre_transform=None,
-        pre_filter=None,
+        root: str,
+        las_features: Optional[list[str]] = None,
+        transform: Optional[Callable] = None,
+        pre_transform: Optional[Callable] = None,
+        pre_filter: Optional[Callable] = None,
     ):
-        """Create a new IndividualTreesDataset instance."""
+        """Create a new instance."""
         self.las_features = las_features
         super().__init__(root, transform, pre_transform, pre_filter)
         self.load(self.processed_paths[0])
@@ -50,13 +41,19 @@ class IndividualTreesDataset(torch_geometric.data.InMemoryDataset):
             )
         )
 
-    @functools.cached_property
+    @property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
-        return ["full.pt"]
+        raise NotImplementedError
 
     def download(self):
-        """Download raw data into raw_dir."""
+        """Download raw data into raw_dir.
+
+        Notes:
+            Requires Kaggle API credentials in ~/.kaggle/kaggle.json. For details, see
+            https://www.kaggle.com/docs/api#authentication
+
+        """
         kaggle.api.dataset_download_files(
             dataset="sentinel3734/uav-point-clouds-of-individual-trees",
             path=self.raw_dir,
@@ -65,15 +62,4 @@ class IndividualTreesDataset(torch_geometric.data.InMemoryDataset):
 
     def process(self):
         """Process raw data and save it to processed_dir."""
-        data_list = []
-        for i, path in enumerate(self.raw_paths):
-            las = laspy.read(path)
-            features = src.clouds.extract_las_features(las, self.las_features)
-            data = torch_geometric.data.Data(
-                pos=torch.from_numpy(las.xyz.astype(np.float32)),
-                x=torch.from_numpy(features),
-                y=torch.zeros(len(las)),
-            )
-            data_list.append(data)
-
-        self.save(data_list, self.processed_paths[0])
+        raise NotImplementedError
