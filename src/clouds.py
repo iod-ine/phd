@@ -55,6 +55,7 @@ def create_regular_grid(
     dy: float,
     add_noise: bool = True,
     features_to_extract: Optional[list[str]] = None,
+    height_threshold: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Arrange a collection of point clouds into a single cloud in a regular grid.
 
@@ -66,6 +67,7 @@ def create_regular_grid(
         add_noise: Whether to add normal noise to the steps.
         features_to_extract: List of features to extract (have to be dimensions of the
             LAS files).
+        height_threshold: Points lower then this threshold are filtered out.
 
     Returns:
         pos, x, y: Coordinates, features, labels (indices of the objects in las_list).
@@ -74,7 +76,7 @@ def create_regular_grid(
     rng = np.random.default_rng()
 
     for i, las in enumerate(las_list):
-        xyz = las.xyz
+        xyz = las.xyz[las.xyz[:, 2] > height_threshold]
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
         x = i % ncols * dx + rng.normal(loc=0.0, scale=1.0) * add_noise
