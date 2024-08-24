@@ -123,8 +123,12 @@ def numpy_to_las(
         points.green[:] = color[:, 1]
         points.blue[:] = color[:, 2]
 
+    header = laspy.LasHeader(point_format=laspy.PointFormat(3))
+    header.scales = points.scales
+    header.point_count = xyz.shape[0]
+
     las = laspy.LasData(
-        header=laspy.LasHeader(point_format=laspy.PointFormat(3)),
+        header=header,
         points=points,
     )
 
