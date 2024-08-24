@@ -22,7 +22,6 @@ class IndividualTreesBase(torch_geometric.data.InMemoryDataset):
         """Create a new instance."""
         self.las_features = las_features
         super().__init__(root, transform, pre_transform, pre_filter)
-        self.load(self.processed_paths[0])
 
     @functools.cached_property
     def raw_file_names(self):
