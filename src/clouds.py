@@ -78,7 +78,7 @@ def create_regular_grid(
     rng = np.random.default_rng()
 
     for i, las in enumerate(las_list):
-        xyz = las.xyz[las.xyz[:, 2] > height_threshold]
+        xyz = las.xyz[las.xyz[:, 2] >= height_threshold]
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
         x = i % ncols * dx + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
