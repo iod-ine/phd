@@ -53,7 +53,8 @@ def create_regular_grid(
     ncols: int,
     dx: float,
     dy: float,
-    add_noise: bool = True,
+    xy_noise_mean: float = 0.0,
+    xy_noise_std: float = 0.0,
     features_to_extract: Optional[list[str]] = None,
     height_threshold: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -64,7 +65,8 @@ def create_regular_grid(
         ncols: Number of columns in the grid.
         dx: Step in the X direction.
         dy: Step in the Y direction.
-        add_noise: Whether to add normal noise to the steps.
+        xy_noise_mean: Mean of the normal distribution of XY noise.
+        xy_noise_std: Standard deviation of the normal distribution of XY noise.
         features_to_extract: List of features to extract (have to be dimensions of the
             LAS files).
         height_threshold: Points lower then this threshold are filtered out.
@@ -79,8 +81,8 @@ def create_regular_grid(
         xyz = las.xyz[las.xyz[:, 2] > height_threshold]
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
-        x = i % ncols * dx + rng.normal(loc=0.0, scale=1.0) * add_noise
-        y = i // ncols * dy + rng.normal(loc=0.0, scale=1.0) * add_noise
+        x = i % ncols * dx + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
+        y = i // ncols * dy + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
         coords.append(xyz - means + np.array([[x, y, 0]]))
         features.append(extract_las_features(las, features_to_extract))
         indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
