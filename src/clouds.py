@@ -78,13 +78,14 @@ def create_regular_grid(
     rng = np.random.default_rng()
 
     for i, las in enumerate(las_list):
-        xyz = las.xyz[las.xyz[:, 2] >= height_threshold]
+        height_mask = las.xyz[:, 2] >= height_threshold
+        xyz = las.xyz[height_mask]
         means = xyz.mean(axis=0, keepdims=True)
         means[0][-1] = 0  # Don't recenter Z
         x = i % ncols * dx + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
         y = i // ncols * dy + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
         coords.append(xyz - means + np.array([[x, y, 0]]))
-        features.append(extract_las_features(las, features_to_extract))
+        features.append(extract_las_features(las[height_mask], features_to_extract))
         indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
 
     return np.vstack(coords), np.vstack(features), np.hstack(indices)
