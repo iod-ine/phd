@@ -86,7 +86,7 @@ def create_regular_grid(
         y = i // ncols * dy + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
         coords.append(xyz - means + np.array([[x, y, 0]]))
         features.append(extract_las_features(las[height_mask], features_to_extract))
-        indices.append(np.zeros(xyz.shape[0], dtype=np.uint32) + i)
+        indices.append(np.zeros(xyz.shape[0], dtype=np.int64) + i)
 
     return np.vstack(coords), np.vstack(features), np.hstack(indices)
 
