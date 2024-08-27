@@ -1,5 +1,6 @@
 """A torch_geometric wrapper for the synthetic forest dataset."""
 
+import hashlib
 import random
 from typing import Literal
 
@@ -55,7 +56,8 @@ class SyntheticForest(IndividualTreesBase):
     @property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
-        return [f"{split}_{self.random_seed}" for split in ("train", "val", "test")]
+        param_set_id = self._generate_id()
+        return [f"{split}_{param_set_id}" for split in ("train", "val", "test")]
 
     def process(self):
         """Process raw data and save it to processed_dir."""
@@ -82,13 +84,26 @@ class SyntheticForest(IndividualTreesBase):
             )
             data_list.append(data)
 
-        train_data = data_list[:self.train_samples]
-        val_data = data_list[self.train_samples:self.train_samples + self.val_samples]
-        test_data = data_list[self.train_samples + self.val_samples:]
+        train_data = data_list[: self.train_samples]
+        val_data = data_list[self.train_samples : self.train_samples + self.val_samples]
+        test_data = data_list[self.train_samples + self.val_samples :]
 
         self.save(train_data, self.processed_paths[0])
         self.save(val_data, self.processed_paths[1])
         self.save(test_data, self.processed_paths[2])
+
+    def _generate_id(self) -> str:
+        """Generate an ID that identifies the set of parameters used for generation."""
+        params = [
+            self.random_seed,
+            self.train_samples,
+            self.val_samples,
+            self.test_samples,
+            self.trees_per_sample,
+            self.las_features,
+        ]
+        param_string = ",".join(map(str, params))
+        return hashlib.md5(param_string.encode()).hexdigest()[:7]
 
 
 if __name__ == "__main__":
