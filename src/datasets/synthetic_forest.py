@@ -62,6 +62,7 @@ class SyntheticForest(IndividualTreesBase):
         las_list = [laspy.read(path) for path in self.raw_paths]
         data_list = []
         total_samples = self.train_samples + self.val_samples + self.test_samples
+        random.seed(self.random_seed)
         for i in tqdm.trange(total_samples):
             sample = random.sample(las_list, k=self.trees_per_sample)
             pos, x, y = src.clouds.create_regular_grid(
