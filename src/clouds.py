@@ -6,6 +6,7 @@ from typing import Optional
 import laspy
 import numpy as np
 import scipy.interpolate
+import torch_geometric
 
 
 class LASClassificationCode(enum.IntEnum):
@@ -136,6 +137,45 @@ def numpy_to_las(
     if extra_dim is not None:
         las.add_extra_dim(laspy.ExtraBytesParams(name="extra", type=extra_dim.dtype))
         las.extra = extra_dim
+
+    return las
+
+
+def pyg_data_to_las(
+    data: torch_geometric.data.Data,
+    *,
+    scale: float = 0.0001,
+) -> laspy.LasData:
+    """Convert a torch_geometric Data object into a LasData object."""
+    points = laspy.ScaleAwarePointRecord.zeros(
+        data.pos.shape[0],
+        point_format=laspy.PointFormat(3),
+        scales=[scale] * 3,
+        offsets=data.pos.min(dim=0)[0].numpy(),
+    )
+    xyz = data.pos.numpy()
+    points.x[:] = xyz[:, 0]
+    points.y[:] = xyz[:, 1]
+    points.z[:] = xyz[:, 2]
+
+    header = laspy.LasHeader(point_format=laspy.PointFormat(3))
+    header.scales = points.scales
+    header.point_count = data.pos.shape[0]
+
+    las = laspy.LasData(
+        header=header,
+        points=points,
+    )
+
+    for i in range(data.x.shape[1]):
+        dimension_name = f"feature{i}"
+        extra_dimension = laspy.ExtraBytesParams(name=dimension_name, type=np.float32)
+        las.add_extra_dim(extra_dimension)
+        las[dimension_name] = data.x[:, i]
+
+    label_dimension = laspy.ExtraBytesParams(name="label", type=np.int64)
+    las.add_extra_dim(label_dimension)
+    las["label"] = data.y
 
     return las
 
