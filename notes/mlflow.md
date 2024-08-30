@@ -41,6 +41,15 @@ os.environ["MLFLOW_TRACKING_USERNAME"] = userdata.get("mlflow-username")
 os.environ["MLFLOW_TRACKING_PASSWORD"] = userdata.get("mlflow-password")
 ```
 
+## Cleaning up deleted experiments
+
+Login to the server, set up the MLFLOW environment variables (), run garbage collector:
+
+```
+set -a; source .env; set +a
+mlflow gc --backend-store-uri sqlite:///mlflow.db
+```
+
 ---
 
 ### Server setup
