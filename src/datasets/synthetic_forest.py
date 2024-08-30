@@ -103,7 +103,7 @@ class SyntheticForest(IndividualTreesBase):
             self.las_features,
         ]
         param_string = ",".join(map(str, params))
-        return hashlib.md5(param_string.encode()).hexdigest()[:7]
+        return hashlib.md5(param_string.encode(), usedforsecurity=False).hexdigest()[:7]
 
 
 if __name__ == "__main__":
