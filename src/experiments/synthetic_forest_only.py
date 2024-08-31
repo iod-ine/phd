@@ -148,6 +148,8 @@ if __name__ == "__main__":
         },
         log_model=True,
     )
+    logger.experiment.log_artifact(run_id=logger.run_id, local_path=__file__)
+    logger.experiment.log_params(run_id=logger.run_id, params=data.dataset_params)
 
     summary = torchinfo.summary(model)
     with tempfile.TemporaryDirectory() as tmp:
@@ -155,7 +157,6 @@ if __name__ == "__main__":
         with open(summary_file, "w") as f:
             f.write(str(summary))
         logger.experiment.log_artifact(run_id=logger.run_id, local_path=summary_file)
-        logger.experiment.log_artifact(run_id=logger.run_id, local_path=__file__)
 
     trainer = L.Trainer(
         max_epochs=250,
