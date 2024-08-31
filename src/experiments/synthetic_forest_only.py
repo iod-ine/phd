@@ -166,6 +166,13 @@ if __name__ == "__main__":
     trainer = L.Trainer(
         max_epochs=250,
         logger=logger,
+        callbacks=[
+            L.pytorch.callbacks.EarlyStopping(
+                monitor="loss/val",
+                mode="min",
+                patience=3,
+            ),
+        ],
     )
     trainer.fit(
         model=model,
