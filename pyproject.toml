@@ -27,6 +27,7 @@ dependencies = [
     "torch-geometric>=2.5.3",
     "h5py>=3.11.0",
     "torch-cluster @ https://data.pyg.org/whl/torch-2.3.0%2Bcpu/torch_cluster-1.6.3-cp310-cp310-macosx_10_9_universal2.whl ; platform_system == 'Darwin'",
+    "torch-scatter @ https://data.pyg.org/whl/torch-2.3.0%2Bcpu/torch_scatter-2.1.2-cp310-cp310-macosx_10_9_universal2.whl ; platform_system == 'Darwin'",
     "lazrs>=0.6.1",
     "kaggle>=1.6.17",
 ]
