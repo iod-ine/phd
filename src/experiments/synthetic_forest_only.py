@@ -172,6 +172,15 @@ if __name__ == "__main__":
                 mode="min",
                 patience=3,
             ),
+            L.pytorch.callbacks.ModelCheckpoint(
+                monitor="loss/val",
+                mode="min",
+                dirpath="checkpoints/",
+                filename="{epoch}-{loss/val:.2f}",
+                save_last=True,
+                save_top_k=2,
+                every_n_epochs=2,
+            ),
         ],
     )
     trainer.fit(
