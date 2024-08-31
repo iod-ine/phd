@@ -62,55 +62,42 @@ class SyntheticForestDataModule(L.LightningDataModule):
         self,
         data_dir: str,
         batch_size: int,
+        random_seed: int = 42,
+        train_samples: int = 100,
+        val_samples: int = 20,
+        test_samples: int = 20,
+        trees_per_sample: int = 50,
         las_features: Optional[list[str]] = None,
     ):
         """Create a new SyntheticForestDataModule instance."""
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
-        self.las_features = las_features
         self.transform = torch_geometric.transforms.Compose(
             [
                 torch_geometric.transforms.NormalizeScale(),
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
         )
+        self.dataset_params = {
+            "root": self.data_dir,
+            "random_seed": random_seed,
+            "train_samples": train_samples,
+            "val_samples": val_samples,
+            "test_samples": test_samples,
+            "trees_per_sample": trees_per_sample,
+            "las_features": las_features,
+        }
 
     def prepare_data(self):
         """Prepare the data for setup (download, tokenize, etc.) on one device."""
-        SyntheticForest(
-            root=self.data_dir,
-            random_seed=42,
-            train_samples=100,
-            val_samples=20,
-            test_samples=20,
-            trees_per_sample=50,
-            las_features=self.las_features,
-        )
+        SyntheticForest(**self.dataset_params)
 
     def setup(self, stage: str):
         """Prepare the data for training (split, transform, etc.) on all devices."""
         if stage == "fit":
-            self.train = SyntheticForest(
-                root=self.data_dir,
-                split="train",
-                random_seed=42,
-                train_samples=100,
-                val_samples=20,
-                test_samples=20,
-                trees_per_sample=50,
-                las_features=self.las_features,
-            )
-            self.val = SyntheticForest(
-                root=self.data_dir,
-                split="val",
-                random_seed=42,
-                train_samples=100,
-                val_samples=20,
-                test_samples=20,
-                trees_per_sample=50,
-                las_features=self.las_features,
-            )
+            self.train = SyntheticForest(split="train", **self.dataset_params)
+            self.val = SyntheticForest(split="val", **self.dataset_params)
 
         if stage == "test":
             raise NotImplementedError()
