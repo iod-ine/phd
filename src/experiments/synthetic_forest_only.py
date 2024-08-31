@@ -150,8 +150,7 @@ if __name__ == "__main__":
         tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
         experiment_name="synthetic_forest_only",
         tags={
-            "test": "yes",
-            "local": "no",
+            "source": "",  # local / Kaggle / Colab / DataSphere
         },
         log_model=True,
     )
@@ -161,12 +160,11 @@ if __name__ == "__main__":
         summary_file = f"{tmp}/model_summary.txt"
         with open(summary_file, "w") as f:
             f.write(str(summary))
-        logger.experiment.log_artifact(run_id=logger.run_id, local_path=tmp)
+        logger.experiment.log_artifact(run_id=logger.run_id, local_path=summary_file)
         logger.experiment.log_artifact(run_id=logger.run_id, local_path=__file__)
 
     trainer = L.Trainer(
         max_epochs=250,
-        overfit_batches=2,
         logger=logger,
     )
     trainer.fit(
