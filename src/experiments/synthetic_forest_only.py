@@ -27,12 +27,14 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
 
         self.save_hyperparameters()
 
+        self.validation_step_outputs = []
+
     def training_step(self, batch, batch_idx):  # noqa: ARG002
         """Process a single batch of the training dataset and return the loss."""
         pred = self.pointnet(batch)
         loss = nn.functional.mse_loss(pred.squeeze(), batch.y.float())
 
-        self.logger.log_metrics({"loss/train": loss.item()}, step=self.global_step)
+        self.log("loss/train", loss.item())
 
         return loss
 
@@ -40,8 +42,13 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
         """Process a single batch of the validation dataset and return the loss."""
         pred = self.pointnet(batch)
         loss = nn.functional.mse_loss(pred.squeeze(), batch.y.float())
+        self.validation_step_outputs.append(loss)
+        self.validation_step_outputs.clear()
 
-        self.logger.log_metrics({"loss/val": loss.item()}, step=self.global_step)
+    def on_validation_epoch_end(self):
+        """Process the results of the validation epoch."""
+        average_loss = torch.stack(self.validation_step_outputs).mean()
+        self.log("loss/val", average_loss)
 
     def configure_optimizers(self):
         """Set up and return the optimizers."""
