@@ -68,7 +68,7 @@ class PointNet2TreeSegmentor(torch.nn.Module):
         x_2 = self.unit_point_net_0(
             x=torch.cat([x_1_interpolated, x_0], dim=1),
             pos=pos_0,
-            edge_index=torch.empty((2, 0), dtype=torch.int64),
+            edge_index=torch.empty((2, 0), dtype=torch.int64, device=x_in.device),
         )
         x_2_interpolated = torch_geometric.nn.knn_interpolate(
             x=x_2,
@@ -81,7 +81,7 @@ class PointNet2TreeSegmentor(torch.nn.Module):
         x_3 = self.unit_point_net_1(
             x=torch.cat([x_2_interpolated, x_in], dim=1),
             pos=pos_in,
-            edge_index=torch.empty((2, 0), dtype=torch.int64),
+            edge_index=torch.empty((2, 0), dtype=torch.int64, device=x_in.device),
         )
         return self.regressor(x_3)
 
