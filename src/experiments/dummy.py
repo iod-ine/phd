@@ -1,6 +1,7 @@
 """A dummy experiment to figure out launching on different platforms."""
 
 import os
+import pathlib
 import tempfile
 
 import dotenv
@@ -123,7 +124,8 @@ class MNISTDataModule(L.LightningDataModule):
 
 
 if __name__ == "__main__":
-    assert dotenv.load_dotenv(override=True), "Unable to load .env"
+    if pathlib.Path(".env").exists():
+        dotenv.load_dotenv(override=True)
 
     autoencoder = LitAutoEncoder(bottleneck_size=64)
     mnist = MNISTDataModule(
