@@ -135,7 +135,7 @@ if __name__ == "__main__":
         dotenv.load_dotenv(override=True)
 
     model = LitPointNet2TreeSegmentor()
-    mnist = SyntheticForestDataModule(
+    data = SyntheticForestDataModule(
         data_dir="data/raw/synthetic_forest",
         batch_size=10,
     )
@@ -179,5 +179,5 @@ if __name__ == "__main__":
     )
     trainer.fit(
         model=model,
-        train_dataloaders=mnist,
+        train_dataloaders=data,
     )
