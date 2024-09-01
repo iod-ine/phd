@@ -198,6 +198,7 @@ if __name__ == "__main__":
                 save_top_k=1,
                 every_n_epochs=1,
             ),
+            L.pytorch.callbacks.LearningRateMonitor(),
         ],
     )
     trainer.fit(
