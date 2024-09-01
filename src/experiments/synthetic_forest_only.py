@@ -184,6 +184,9 @@ if __name__ == "__main__":
     trainer = L.Trainer(
         max_epochs=50,
         logger=logger,
+        log_every_n_steps=10,
+        accumulate_grad_batches=1,
+        enable_progress_bar=True,
         callbacks=[
             L.pytorch.callbacks.EarlyStopping(
                 monitor="loss/val",
@@ -199,7 +202,7 @@ if __name__ == "__main__":
                 save_top_k=1,
                 every_n_epochs=1,
             ),
-            L.pytorch.callbacks.LearningRateMonitor(),
+            L.pytorch.callbacks.LearningRateMonitor(logging_interval="epoch"),
         ],
     )
     trainer.fit(
