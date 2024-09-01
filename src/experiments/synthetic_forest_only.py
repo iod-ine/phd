@@ -9,6 +9,7 @@ import dotenv
 import lightning as L
 import torch
 import torch_geometric
+import torch_scatter
 import torchinfo
 from torch import nn
 
