@@ -61,7 +61,19 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
 
     def configure_optimizers(self):
         """Set up and return the optimizers."""
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        optimizer = torch.optim.Adam(
+            params=self.parameters(),
+            lr=1e-3,
+        )
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            optimizer=optimizer,
+            step_size=3,
+            gamma=0.5,
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+        }
 
 
 class SyntheticForestDataModule(L.LightningDataModule):
