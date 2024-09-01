@@ -7,6 +7,7 @@ from typing import Optional
 
 import dotenv
 import lightning as L
+import mlflow
 import torch
 import torch_geometric
 import torch_scatter
@@ -171,7 +172,7 @@ if __name__ == "__main__":
         log_model=True,
     )
     logger.experiment.log_artifact(run_id=logger.run_id, local_path=__file__)
-    logger.experiment.log_params(run_id=logger.run_id, params=data.dataset_params)
+    mlflow.log_params(run_id=logger.run_id, params=data.dataset_params)
 
     summary = torchinfo.summary(model)
     with tempfile.TemporaryDirectory() as tmp:
