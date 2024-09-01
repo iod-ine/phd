@@ -53,12 +53,12 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
         )
         number_of_trees = (per_batch_max_index + 1).sum()
         self.validation_step_outputs.append(loss / number_of_trees)
-        self.validation_step_outputs.clear()
 
     def on_validation_epoch_end(self):
         """Process the results of the validation epoch."""
         average_loss = torch.stack(self.validation_step_outputs).mean()
         self.log("loss/val", average_loss)
+        self.validation_step_outputs.clear()
 
     def configure_optimizers(self):
         """Set up and return the optimizers."""
