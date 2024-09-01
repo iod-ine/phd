@@ -92,6 +92,11 @@ class SyntheticForestDataModule(L.LightningDataModule):
         val_samples: int = 20,
         test_samples: int = 20,
         trees_per_sample: int = 50,
+        height_threshold: float = 2.0,
+        dx: float = 5.0,
+        dy: float = 5.0,
+        xy_noise_mean: float = 0.0,
+        xy_noise_std: float = 1.0,
         las_features: Optional[list[str]] = None,
     ):
         """Create a new SyntheticForestDataModule instance."""
@@ -111,6 +116,11 @@ class SyntheticForestDataModule(L.LightningDataModule):
             "val_samples": val_samples,
             "test_samples": test_samples,
             "trees_per_sample": trees_per_sample,
+            "height_threshold": height_threshold,
+            "dx": dx,
+            "dy": dy,
+            "xy_noise_mean": xy_noise_mean,
+            "xy_noise_std": xy_noise_std,
             "las_features": las_features,
         }
 

@@ -26,6 +26,11 @@ class SyntheticForest(IndividualTreesBase):
         val_samples: int = 20,
         test_samples: int = 20,
         trees_per_sample: int = 100,
+        height_threshold: float = 2.0,
+        dx: float = 2.0,
+        dy: float = 2.0,
+        xy_noise_mean: float = 0.0,
+        xy_noise_std: float = 1.0,
         las_features=None,
         transform=None,
         pre_transform=None,
@@ -38,6 +43,11 @@ class SyntheticForest(IndividualTreesBase):
         self.val_samples = val_samples
         self.test_samples = test_samples
         self.trees_per_sample = trees_per_sample
+        self.height_threshold = height_threshold
+        self.dx = dx
+        self.dy = dy
+        self.xy_noise_mean = xy_noise_mean
+        self.xy_noise_std = xy_noise_std
         super().__init__(
             root=root,
             las_features=las_features,
@@ -69,13 +79,13 @@ class SyntheticForest(IndividualTreesBase):
             sample = random.sample(las_list, k=self.trees_per_sample)
             pos, x, y = src.clouds.create_regular_grid(
                 las_list=sample,
-                ncols=10,
-                dx=2,
-                dy=2,
-                xy_noise_mean=0,
-                xy_noise_std=1,
+                ncols=np.ceil(np.sqrt(self.trees_per_sample)),
+                dx=self.dx,
+                dy=self.dy,
+                xy_noise_mean=self.xy_noise_mean,
+                xy_noise_std=self.xy_noise_std,
                 features_to_extract=self.las_features,
-                height_threshold=2,
+                height_threshold=self.height_threshold,
             )
             data = torch_geometric.data.Data(
                 pos=torch.from_numpy(pos.astype(np.float32)),
