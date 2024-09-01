@@ -40,8 +40,10 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
             index=batch.batch,
         )
         number_of_trees = (per_batch_max_index + 1).sum()
-        self.log("loss/train", loss.item() / number_of_trees)
-
+        self.logger.log_metrics(
+            metrics={"loss/train": loss.item() / number_of_trees},
+            step=self.global_step,
+        )
         return loss
 
     def validation_step(self, batch, batch_idx):  # noqa: ARG002
