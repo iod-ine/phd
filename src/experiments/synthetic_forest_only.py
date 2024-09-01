@@ -158,14 +158,14 @@ if __name__ == "__main__":
     model = LitPointNet2TreeSegmentor()
     data = SyntheticForestDataModule(
         data_dir="data/raw/synthetic_forest",
-        batch_size=10,
+        batch_size=2,
     )
 
     logger = L.pytorch.loggers.MLFlowLogger(
         tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
         experiment_name="synthetic_forest_only",
         tags={
-            "source": "",  # local / Kaggle / Colab / DataSphere
+            "source": "local",  # local / Kaggle / Colab / DataSphere
         },
         log_model=True,
     )
@@ -180,7 +180,7 @@ if __name__ == "__main__":
         logger.experiment.log_artifact(run_id=logger.run_id, local_path=summary_file)
 
     trainer = L.Trainer(
-        max_epochs=250,
+        max_epochs=50,
         logger=logger,
         callbacks=[
             L.pytorch.callbacks.EarlyStopping(
@@ -194,8 +194,8 @@ if __name__ == "__main__":
                 dirpath="checkpoints/",
                 filename="{epoch}-{loss/val:.2f}",
                 save_last=True,
-                save_top_k=2,
-                every_n_epochs=2,
+                save_top_k=1,
+                every_n_epochs=1,
             ),
         ],
     )
