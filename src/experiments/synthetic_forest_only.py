@@ -131,8 +131,16 @@ class SyntheticForestDataModule(L.LightningDataModule):
     def setup(self, stage: str):
         """Prepare the data for training (split, transform, etc.) on all devices."""
         if stage == "fit":
-            self.train = SyntheticForest(split="train", **self.dataset_params)
-            self.val = SyntheticForest(split="val", **self.dataset_params)
+            self.train = SyntheticForest(
+                split="train",
+                **self.dataset_params,
+                transform=self.transform,
+            )
+            self.val = SyntheticForest(
+                split="val",
+                **self.dataset_params,
+                transform=self.val_transform,
+            )
 
         if stage == "test":
             raise NotImplementedError()
