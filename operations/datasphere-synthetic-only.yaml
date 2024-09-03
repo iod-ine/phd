@@ -1,0 +1,16 @@
+name: synthetic-only
+desc: Train a PointNet++ tree segmentor directly and only on the synthetic forest data.
+
+cmd: python -m src.experiments.synthetic_forest_only
+
+env:
+  docker: pyg-pointnet:v1
+  python:
+    type: manual
+    version: 3.10.13
+    requirements-file: operations/requirements.txt
+    local-paths:
+      - src/
+      - .env
+
+cloud-instance-type: g2.1
