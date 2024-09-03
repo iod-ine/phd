@@ -35,20 +35,20 @@ class PointNet2TreeSegmentor(torch.nn.Module):
         )
         self.unit_point_net_0 = torch_geometric.nn.PointNetConv(
             local_nn=torch_geometric.nn.MLP(
-                channel_list=[2048 + 256 + 3, 2048, 1024, 512],
+                channel_list=[2048 + 256 + 3, 1024, 512, 256],
                 bias=False,
             ),
             add_self_loops=True,
         )
         self.unit_point_net_1 = torch_geometric.nn.PointNetConv(
             local_nn=torch_geometric.nn.MLP(
-                channel_list=[512 + num_features + 3, 512, 256, 128],
+                channel_list=[256 + num_features + 3, 256, 128, 64],
                 bias=False,
             ),
             add_self_loops=True,
         )
         self.regressor = torch_geometric.nn.MLP(
-            channel_list=[128, 64, 32, 1],
+            channel_list=[64, 32, 16, 1],
             bias=False,
         )
 
