@@ -109,6 +109,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
         )
+        self.val_transform = self.transform
         self.dataset_params = {
             "root": self.data_dir,
             "random_seed": random_seed,
