@@ -1,24 +1,27 @@
 """Train a PointNet++ tree segmentor directly and only on the synthetic forest data."""
 
 import os
-import pathlib
 import tempfile
 from typing import Optional
 
 import dotenv
+import laspy
 import lightning as L
 import mlflow
+import numpy as np
 import torch
 import torch_geometric
 import torch_scatter
 import torchinfo
 from torch import nn
 
+import src.clouds
+import src.visualization.clouds
 from src.datasets import SyntheticForest
 from src.models.pointnet import PointNet2TreeSegmentor
 
 
-class LitPointNet2TreeSegmentor(L.LightningModule):
+class PointNet2TreeSegmentorModule(L.LightningModule):
     """A PointNet++ tree segmentor lightning module."""
 
     def __init__(self):
@@ -40,10 +43,7 @@ class LitPointNet2TreeSegmentor(L.LightningModule):
             index=batch.batch,
         )
         number_of_trees = (per_batch_max_index + 1).sum()
-        self.logger.log_metrics(
-            metrics={"loss/train": loss.item() / number_of_trees},
-            step=self.global_step,
-        )
+        self.log("loss/train", loss.item() / number_of_trees)
         return loss
 
     def validation_step(self, batch, batch_idx):  # noqa: ARG002
@@ -155,6 +155,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
             dataset=self.train,
             batch_size=self.batch_size,
             shuffle=True,
+            num_workers=11,
         )
 
     def val_dataloader(self):
@@ -163,6 +164,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
             dataset=self.val,
             batch_size=self.batch_size,
             shuffle=False,
+            num_workers=11,
         )
 
     def test_dataloader(self):
@@ -175,24 +177,29 @@ class SyntheticForestDataModule(L.LightningDataModule):
 
 
 if __name__ == "__main__":
-    if pathlib.Path(".env").exists():
-        dotenv.load_dotenv(override=True)
+    assert dotenv.load_dotenv(override=True)
 
-    model = LitPointNet2TreeSegmentor()
+    model = PointNet2TreeSegmentorModule()
     data = SyntheticForestDataModule(
         data_dir="data/raw/synthetic_forest",
-        batch_size=2,
+        batch_size=1,
+        trees_per_sample=36,
+        random_seed=91,
+        dx=4,
+        dy=4,
+        xy_noise_std=2,
     )
 
     logger = L.pytorch.loggers.MLFlowLogger(
         tracking_uri=os.getenv("MLFLOW_TRACKING_URI"),
         experiment_name="synthetic_forest_only",
         tags={
-            "source": "local",  # local / Kaggle / Colab / DataSphere
+            "environment": "local",
         },
         log_model=True,
     )
-    logger.experiment.log_artifact(run_id=logger.run_id, local_path=__file__)
+
+    mlflow.log_artifact(run_id=logger.run_id, local_path=__file__)
     mlflow.log_params(run_id=logger.run_id, params=data.dataset_params)
 
     summary = torchinfo.summary(model)
@@ -200,19 +207,20 @@ if __name__ == "__main__":
         summary_file = f"{tmp}/model_summary.txt"
         with open(summary_file, "w") as f:
             f.write(str(summary))
-        logger.experiment.log_artifact(run_id=logger.run_id, local_path=summary_file)
+        mlflow.log_artifact(run_id=logger.run_id, local_path=summary_file)
 
     trainer = L.Trainer(
         max_epochs=50,
+        accelerator="cpu",
         logger=logger,
-        log_every_n_steps=10,
-        accumulate_grad_batches=1,
+        log_every_n_steps=5,
+        accumulate_grad_batches=5,
         enable_progress_bar=True,
         callbacks=[
             L.pytorch.callbacks.EarlyStopping(
                 monitor="loss/val",
                 mode="min",
-                patience=3,
+                patience=5,
             ),
             L.pytorch.callbacks.ModelCheckpoint(
                 monitor="loss/val",
@@ -229,4 +237,28 @@ if __name__ == "__main__":
     trainer.fit(
         model=model,
         train_dataloaders=data,
+    )
+
+    example = data.val[0]
+    example["batch"] = torch.zeros_like(example.y)
+
+    model = model.pointnet.to("cpu")
+    model.eval()
+    with torch.no_grad():
+        pred = model(example)
+
+    las = src.clouds.pyg_data_to_las(example)
+    las.add_extra_dim(laspy.ExtraBytesParams(name="pred", type=np.float32))
+    las["pred"][:] = pred.cpu().squeeze().numpy()
+    las.write("example_prediction.laz")
+    mlflow.log_artifact(run_id=logger.run_id, local_path="example_prediction.laz")
+
+    ax = src.visualization.clouds.scatter_point_cloud_3d(
+        las.xyz,
+        color=las["pred"],
+    )
+    logger.experiment.log_figure(
+        run_id=logger.run_id,
+        figure=ax.figure,
+        artifact_file="example_prediction.png",
     )
