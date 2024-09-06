@@ -1,7 +1,6 @@
 """A torch_geometric wrapper for the synthetic forest dataset."""
 
 import functools
-import hashlib
 import itertools
 import random
 from typing import Literal
@@ -14,6 +13,7 @@ import torch_geometric
 import tqdm
 
 import src.clouds
+import src.datasets.utils
 
 
 class SyntheticForest(torch_geometric.data.InMemoryDataset):
@@ -89,8 +89,15 @@ class SyntheticForest(torch_geometric.data.InMemoryDataset):
     @property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
-        param_set_id = self._generate_id()
-        return [f"{split}_{param_set_id}" for split in ("train", "val", "test")]
+        param_set_id = src.datasets.utils.generate_unique_id_for_parameter_set(
+            self.random_seed,
+            self.train_samples,
+            self.val_samples,
+            self.test_samples,
+            self.trees_per_sample,
+            self.las_features,
+        )
+        return [f"sf_{split}_{param_set_id}" for split in ("train", "val", "test")]
 
     def download(self):
         """Download raw data into raw_dir.
@@ -138,19 +145,6 @@ class SyntheticForest(torch_geometric.data.InMemoryDataset):
         self.save(train_data, self.processed_paths[0])
         self.save(val_data, self.processed_paths[1])
         self.save(test_data, self.processed_paths[2])
-
-    def _generate_id(self) -> str:
-        """Generate an ID that identifies the set of parameters used for generation."""
-        params = [
-            self.random_seed,
-            self.train_samples,
-            self.val_samples,
-            self.test_samples,
-            self.trees_per_sample,
-            self.las_features,
-        ]
-        param_string = ",".join(map(str, params))
-        return hashlib.md5(param_string.encode(), usedforsecurity=False).hexdigest()[:7]
 
 
 if __name__ == "__main__":
