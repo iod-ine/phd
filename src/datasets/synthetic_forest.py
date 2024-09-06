@@ -1,9 +1,12 @@
 """A torch_geometric wrapper for the synthetic forest dataset."""
 
+import functools
 import hashlib
+import itertools
 import random
 from typing import Literal
 
+import kaggle
 import laspy
 import numpy as np
 import torch
@@ -11,10 +14,9 @@ import torch_geometric
 import tqdm
 
 import src.clouds
-from src.datasets.individual_trees import IndividualTreesBase
 
 
-class SyntheticForest(IndividualTreesBase):
+class SyntheticForest(torch_geometric.data.InMemoryDataset):
     """A generated synthetic forest from the individual trees."""
 
     def __init__(
@@ -35,6 +37,8 @@ class SyntheticForest(IndividualTreesBase):
         transform=None,
         pre_transform=None,
         pre_filter=None,
+        log: bool = True,
+        force_reload: bool = False,
     ):
         """Create a new SyntheticForest instance."""
         self.split = split
@@ -48,12 +52,14 @@ class SyntheticForest(IndividualTreesBase):
         self.dy = dy
         self.xy_noise_mean = xy_noise_mean
         self.xy_noise_std = xy_noise_std
+        self.las_features = las_features
         super().__init__(
             root=root,
-            las_features=las_features,
             transform=transform,
             pre_transform=pre_transform,
             pre_filter=pre_filter,
+            log=log,
+            force_reload=force_reload,
         )
         match split:
             case "train":
@@ -63,11 +69,42 @@ class SyntheticForest(IndividualTreesBase):
             case "test":
                 self.load(self.processed_paths[2])
 
+    @functools.cached_property
+    def raw_file_names(self):
+        """List of files that need to be found in raw_dir to skip the download."""
+        return list(
+            itertools.chain.from_iterable(
+                [
+                    [f"Alder/alder_{i:>02}.las" for i in range(26)],
+                    [f"Aspen/aspen_{i:>02}.las" for i in range(73)],
+                    [f"Birch/birch_{i:>02}.las" for i in range(77)],
+                    [f"Fir/fir_{i:>02}.las" for i in range(37)],
+                    [f"Pine/pine_{i:>02}.las" for i in range(70)],
+                    [f"Spruce/spruce_{i:>02}.las" for i in range(94)],
+                    [f"Tilia/tilia_{i:>02}.las" for i in range(17)],
+                ],
+            )
+        )
+
     @property
     def processed_file_names(self):
         """List of files that need to be found in processed_dir to skip processing."""
         param_set_id = self._generate_id()
         return [f"{split}_{param_set_id}" for split in ("train", "val", "test")]
+
+    def download(self):
+        """Download raw data into raw_dir.
+
+        Notes:
+            Requires Kaggle API credentials in ~/.kaggle/kaggle.json. For details, see
+            https://www.kaggle.com/docs/api#authentication
+
+        """
+        kaggle.api.dataset_download_files(
+            dataset="sentinel3734/uav-point-clouds-of-individual-trees",
+            path=self.raw_dir,
+            unzip=True,
+        )
 
     def process(self):
         """Process raw data and save it to processed_dir."""
