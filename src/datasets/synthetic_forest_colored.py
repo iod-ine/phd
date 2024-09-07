@@ -5,7 +5,7 @@ import itertools
 import pathlib
 import random
 import zipfile
-from typing import Literal
+from typing import Literal, Optional
 
 import kaggle
 import laspy
@@ -31,6 +31,7 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
         test_samples: int = 20,
         trees_per_sample: int = 100,
         height_threshold: float = 2.0,
+        n_cols: Optional[int] = None,
         dx: float = 2.0,
         dy: float = 2.0,
         xy_noise_mean: float = 0.0,
@@ -50,6 +51,7 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
         self.test_samples = test_samples
         self.trees_per_sample = trees_per_sample
         self.height_threshold = height_threshold
+        self.n_cols = n_cols or np.ceil(np.sqrt(trees_per_sample))
         self.dx = dx
         self.dy = dy
         self.xy_noise_mean = xy_noise_mean
@@ -148,7 +150,7 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
             sample = random.sample(processed_las_list, k=self.trees_per_sample)
             pos, x, y = src.clouds.create_regular_grid(
                 las_list=sample,
-                ncols=np.ceil(np.sqrt(self.trees_per_sample)),
+                ncols=self.n_cols,
                 dx=self.dx,
                 dy=self.dy,
                 xy_noise_mean=self.xy_noise_mean,
