@@ -1,3 +1,5 @@
+"""Functions for visualizing point clouds."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 
