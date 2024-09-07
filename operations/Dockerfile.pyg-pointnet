@@ -7,6 +7,6 @@ RUN useradd -ms /bin/bash --uid 1000 jupyter\
 && curl https://bootstrap.pypa.io/get-pip.py | python3
 
 RUN /usr/bin/python3.10 -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-RUN /usr/bin/python3.10 -m pip install lightning laspy lazrs mlflow torchmetrics torchinfo torch_geometric kaggle matplotlib pandas scikit-learn python-dotenv psutil pynvml
+RUN /usr/bin/python3.10 -m pip install lightning laspy lazrs mlflow rasterio torchmetrics torchinfo torch_geometric kaggle matplotlib pandas scikit-learn python-dotenv psutil pynvml
 RUN /usr/bin/python3.10 -m pip install https://data.pyg.org/whl/torch-2.4.0%2Bcu118/torch_cluster-1.6.3%2Bpt24cu118-cp310-cp310-linux_x86_64.whl
 RUN /usr/bin/python3.10 -m pip install https://data.pyg.org/whl/torch-2.4.0%2Bcu118/torch_scatter-2.1.2%2Bpt24cu118-cp310-cp310-linux_x86_64.whl
