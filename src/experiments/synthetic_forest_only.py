@@ -168,7 +168,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
             dataset=self.val,
             batch_size=self.batch_size,
             shuffle=False,
-            num_workers=11,
+            num_workers=self.num_workers,
         )
 
     def test_dataloader(self):
