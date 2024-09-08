@@ -99,6 +99,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
         xy_noise_mean: float = 0.0,
         xy_noise_std: float = 1.0,
         las_features: Optional[list[str]] = None,
+        num_workers: int = 11,
     ):
         """Create a new SyntheticForestDataModule instance."""
         super().__init__()
@@ -126,6 +127,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
             "xy_noise_std": xy_noise_std,
             "las_features": las_features,
         }
+        self.num_workers = num_workers
 
     def prepare_data(self):
         """Prepare the data for setup (download, tokenize, etc.) on one device."""
@@ -157,7 +159,7 @@ class SyntheticForestDataModule(L.LightningDataModule):
             dataset=self.train,
             batch_size=self.batch_size,
             shuffle=True,
-            num_workers=11,
+            num_workers=self.num_workers,
         )
 
     def val_dataloader(self):
