@@ -18,6 +18,7 @@ from torch import nn
 import src.clouds
 import src.visualization.clouds
 from src.datasets import SyntheticForestColored
+from src.metrics import Accuracy, IntersectionOverUnion
 from src.models.pointnet import PointNet2TreeSegmentor
 
 
@@ -29,6 +30,8 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         super().__init__()
 
         self.pointnet = PointNet2TreeSegmentor(num_features=3)
+        self.accuracy = Accuracy()
+        self.intersection_over_union = IntersectionOverUnion()
 
         self.save_hyperparameters()
 
@@ -56,12 +59,18 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         )
         number_of_trees = (per_batch_max_index + 1).sum()
         self.validation_step_outputs.append(loss / number_of_trees)
+        self.accuracy(pred.squeeze().round(), batch.y)
+        self.intersection_over_union(pred.squeeze().round(), batch.y)
 
     def on_validation_epoch_end(self):
         """Process the results of the validation epoch."""
         average_loss = torch.stack(self.validation_step_outputs).mean()
         self.log("loss/val", average_loss)
+        self.log("accuracy/val", self.accuracy.compute())
+        self.log("iou/val", self.intersection_over_union.compute())
         self.validation_step_outputs.clear()
+        self.accuracy.reset()
+        self.intersection_over_union.reset()
 
     def configure_optimizers(self):
         """Set up and return the optimizers."""
