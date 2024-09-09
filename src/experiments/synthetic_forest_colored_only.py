@@ -76,12 +76,25 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         """Set up and return the optimizers."""
         optimizer = torch.optim.Adam(
             params=self.parameters(),
-            lr=1e-3,
+            lr=2e-3,
         )
-        scheduler = torch.optim.lr_scheduler.StepLR(
+        scheduler = torch.optim.lr_scheduler.SequentialLR(
             optimizer=optimizer,
-            step_size=3,
-            gamma=0.5,
+            schedulers=[
+                torch.optim.lr_scheduler.LinearLR(
+                    optimizer=optimizer,
+                    start_factor=0.1,
+                    end_factor=1.0,
+                    total_iters=3,
+                ),
+                torch.optim.lr_scheduler.LinearLR(
+                    optimizer=optimizer,
+                    start_factor=1,
+                    end_factor=0.1,
+                    total_iters=15,
+                ),
+            ],
+            milestones=[3],
         )
         return {
             "optimizer": optimizer,
@@ -116,6 +129,7 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         self.batch_size = batch_size
         self.transform = torch_geometric.transforms.Compose(
             [
+                torch_geometric.transforms.RandomJitter(0.2),
                 torch_geometric.transforms.NormalizeScale(),
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
