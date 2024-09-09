@@ -109,6 +109,7 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         self,
         data_dir: str,
         batch_size: int,
+        random_jitter: float = 0.2,
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
@@ -127,9 +128,10 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         super().__init__()
         self.data_dir = data_dir
         self.batch_size = batch_size
+        self.random_jitter = random_jitter
         self.transform = torch_geometric.transforms.Compose(
             [
-                torch_geometric.transforms.RandomJitter(0.2),
+                torch_geometric.transforms.RandomJitter(random_jitter),
                 torch_geometric.transforms.NormalizeScale(),
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
