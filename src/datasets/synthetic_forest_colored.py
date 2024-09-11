@@ -100,6 +100,12 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
             self.val_samples,
             self.test_samples,
             self.trees_per_sample,
+            self.height_threshold,
+            self.n_cols,
+            self.dx,
+            self.dy,
+            self.xy_noise_mean,
+            self.xy_noise_std,
             self.las_features,
         )
         return [f"sfc_{split}_{param_set_id}" for split in ("train", "val", "test")]
