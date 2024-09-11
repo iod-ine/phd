@@ -110,6 +110,9 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         data_dir: str,
         batch_size: int,
         random_jitter: float = 0.2,
+        random_flip_probability: float = 0.1,
+        random_rotate_degrees_range: float = 360,
+        random_scale_range_scales: tuple[float, float] = (0.9, 1.1),
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
@@ -129,10 +132,26 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.random_jitter = random_jitter
+        self.random_flip_probability = random_flip_probability
+        self.random_rotate_degrees_range = random_rotate_degrees_range
+        self.random_scale_range_scales = random_scale_range_scales
         self.transform = torch_geometric.transforms.Compose(
             [
-                torch_geometric.transforms.RandomJitter(random_jitter),
+                torch_geometric.transforms.RandomJitter(translate=random_jitter),
                 torch_geometric.transforms.NormalizeScale(),
+                torch_geometric.transforms.RandomFlip(
+                    axis=0,
+                    p=random_flip_probability,
+                ),
+                torch_geometric.transforms.RandomFlip(
+                    axis=1,
+                    p=random_flip_probability,
+                ),
+                torch_geometric.transforms.RandomRotate(
+                    degrees=random_rotate_degrees_range,
+                    axis=2,
+                ),
+                torch_geometric.transforms.RandomScale(scales=random_scale_range_scales),
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
         )
