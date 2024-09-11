@@ -49,6 +49,13 @@ def normalize_cloud_height(
     return np.clip(out, a_min=0, a_max=np.inf)
 
 
+def recenter_cloud(xyz: np.ndarray) -> np.ndarray:
+    """Subtract the mean from X and Y coordinates of all points."""
+    means = xyz.mean(axis=0, keepdims=True)
+    means[0][-1] = 0  # Don't recenter Z
+    return xyz - means
+
+
 def create_regular_grid(
     las_list: list[laspy.LasData],
     ncols: int,
