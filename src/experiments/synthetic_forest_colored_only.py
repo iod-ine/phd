@@ -20,6 +20,7 @@ import src.visualization.clouds
 from src.datasets import SyntheticForestColored
 from src.metrics import Accuracy, IntersectionOverUnion
 from src.models.pointnet import PointNet2TreeSegmentor
+from src.transforms import PerTreeRandomRotateScale
 
 
 class PointNet2TreeSegmentorModule(L.LightningModule):
@@ -110,7 +111,8 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         data_dir: str,
         batch_size: int,
         random_jitter: float = 0.2,
-        random_scale_range_scales: tuple[float, float] = (0.9, 1.1),
+        random_scale_range: tuple[float, float] = (0.9, 1.1),
+        random_rotate_degrees_range: tuple[float, float] = (-180, 180),
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
@@ -130,11 +132,15 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.random_jitter = random_jitter
-        self.random_scale_range_scales = random_scale_range_scales
+        self.random_scale_range = random_scale_range
+        self.random_rotate_degrees_range = random_rotate_degrees_range
         self.transform = torch_geometric.transforms.Compose(
             [
                 torch_geometric.transforms.RandomJitter(translate=random_jitter),
-                torch_geometric.transforms.RandomScale(scales=random_scale_range_scales),
+                PerTreeRandomRotateScale(
+                    scales=random_scale_range,
+                    degrees=random_rotate_degrees_range,
+                ),
                 torch_geometric.transforms.NormalizeScale(),
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
