@@ -2,7 +2,7 @@
 
 import os
 import tempfile
-from typing import Optional
+from typing import Callable, Optional
 
 import dotenv
 import laspy
@@ -18,7 +18,7 @@ from torch import nn
 import src.clouds
 import src.visualization.clouds
 from src.datasets import SyntheticForestColored
-from src.metrics import Accuracy, IntersectionOverUnion
+from src.metrics import Accuracy
 from src.models.pointnet import PointNet2TreeSegmentor
 from src.transforms import PerTreeRandomRotateScale
 
@@ -26,13 +26,13 @@ from src.transforms import PerTreeRandomRotateScale
 class PointNet2TreeSegmentorModule(L.LightningModule):
     """A PointNet++ tree segmentor lightning module."""
 
-    def __init__(self):
+    def __init__(self, loss: Optional[Callable] = None):
         """Create a new LitPointNet2TreeSegmentor instance."""
         super().__init__()
 
         self.pointnet = PointNet2TreeSegmentor(num_features=3)
         self.accuracy = Accuracy()
-        self.intersection_over_union = IntersectionOverUnion()
+        self.loss = loss or nn.MSELoss()
 
         self.save_hyperparameters()
 
@@ -41,7 +41,7 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     def training_step(self, batch, batch_idx):  # noqa: ARG002
         """Process a single batch of the training dataset and return the loss."""
         pred = self.pointnet(batch)
-        loss = nn.functional.mse_loss(pred.squeeze(), batch.y.float())
+        loss = self.loss(pred.squeeze(), batch.y.float())
         per_batch_max_index, _ = torch_scatter.scatter_max(
             src=batch.y,
             index=batch.batch,
@@ -53,25 +53,17 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     def validation_step(self, batch, batch_idx):  # noqa: ARG002
         """Process a single batch of the validation dataset and return the loss."""
         pred = self.pointnet(batch)
-        loss = nn.functional.mse_loss(pred.squeeze(), batch.y.float())
-        per_batch_max_index, _ = torch_scatter.scatter_max(
-            src=batch.y,
-            index=batch.batch,
-        )
-        number_of_trees = (per_batch_max_index + 1).sum()
-        self.validation_step_outputs.append(loss / number_of_trees)
+        loss = self.loss(pred.squeeze(), batch.y.float())
+        self.validation_step_outputs.append(loss)
         self.accuracy(pred.squeeze().round(), batch.y)
-        self.intersection_over_union(pred.squeeze().round(), batch.y)
 
     def on_validation_epoch_end(self):
         """Process the results of the validation epoch."""
         average_loss = torch.stack(self.validation_step_outputs).mean()
         self.log("loss/val", average_loss)
         self.log("accuracy/val", self.accuracy.compute())
-        self.log("iou/val", self.intersection_over_union.compute())
         self.validation_step_outputs.clear()
         self.accuracy.reset()
-        self.intersection_over_union.reset()
 
     def configure_optimizers(self):
         """Set up and return the optimizers."""
@@ -92,7 +84,7 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
                     optimizer=optimizer,
                     start_factor=1,
                     end_factor=0.1,
-                    total_iters=15,
+                    total_iters=20,
                 ),
             ],
             milestones=[3],
