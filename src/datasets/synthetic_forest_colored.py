@@ -114,8 +114,9 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
         """Download raw data into raw_dir.
 
         Notes:
-            Requires Kaggle API credentials in ~/.kaggle/kaggle.json. For details, see
-            https://www.kaggle.com/docs/api#authentication
+            Requires Kaggle API credentials in KAGGLE_USERNAME and KAGGLE_KEY
+            environment variables or ~/.kaggle/kaggle.json. For details, see
+            https://www.kaggle.com/docs/api#authentication.
 
         """
         kaggle.api.dataset_download_files(
