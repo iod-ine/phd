@@ -26,7 +26,15 @@ from src.transforms import PerTreeRandomRotateScale
 class PointNet2TreeSegmentorModule(L.LightningModule):
     """A PointNet++ tree segmentor lightning module."""
 
-    def __init__(self, loss: Optional[Callable] = None):
+    def __init__(
+        self,
+        loss: Optional[Callable] = None,
+        lr: float = 1e-2,
+        lr_start_factor: float = 0.1,
+        lr_warmup_iters: int = 3,
+        lr_decay_iters: int = 20,
+        lr_end_factor: float = 0.1,
+    ):
         """Create a new LitPointNet2TreeSegmentor instance."""
         super().__init__()
 
@@ -34,7 +42,13 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         self.accuracy = Accuracy()
         self.loss = loss or nn.MSELoss()
 
-        self.save_hyperparameters()
+        self.lr = lr
+        self.lr_start_factor = lr_start_factor
+        self.lr_warmup_iters = lr_warmup_iters
+        self.lr_decay_iters = lr_decay_iters
+        self.lr_end_factor = lr_end_factor
+
+        self.save_hyperparameters(ignore=["loss"])
 
         self.validation_step_outputs = []
 
@@ -69,25 +83,25 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         """Set up and return the optimizers."""
         optimizer = torch.optim.Adam(
             params=self.parameters(),
-            lr=2e-3,
+            lr=self.lr,
         )
         scheduler = torch.optim.lr_scheduler.SequentialLR(
             optimizer=optimizer,
             schedulers=[
                 torch.optim.lr_scheduler.LinearLR(
                     optimizer=optimizer,
-                    start_factor=0.1,
+                    start_factor=self.lr_start_factor,
                     end_factor=1.0,
-                    total_iters=3,
+                    total_iters=self.lr_warmup_iters,
                 ),
                 torch.optim.lr_scheduler.LinearLR(
                     optimizer=optimizer,
-                    start_factor=1,
-                    end_factor=0.1,
-                    total_iters=20,
+                    start_factor=1.0,
+                    end_factor=self.lr_end_factor,
+                    total_iters=self.lr_decay_iters,
                 ),
             ],
-            milestones=[3],
+            milestones=[self.lr_warmup_iters],
         )
         return {
             "optimizer": optimizer,
