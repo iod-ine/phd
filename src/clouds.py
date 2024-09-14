@@ -180,9 +180,10 @@ def pyg_data_to_las(
         las.add_extra_dim(extra_dimension)
         las[dimension_name] = data.x[:, i]
 
-    label_dimension = laspy.ExtraBytesParams(name="label", type=np.int64)
-    las.add_extra_dim(label_dimension)
-    las["label"] = data.y
+    if "y" in data:
+        label_dimension = laspy.ExtraBytesParams(name="label", type=np.int64)
+        las.add_extra_dim(label_dimension)
+        las["label"] = data.y
 
     return las
 
