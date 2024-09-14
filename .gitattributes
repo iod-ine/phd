@@ -1,1 +1,4 @@
 notebooks/** linguist-documentation
+
+*.ipynb	diff=jupyternotebook
+*.ipynb	merge=jupyternotebook
