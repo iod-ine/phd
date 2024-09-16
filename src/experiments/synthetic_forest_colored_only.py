@@ -151,7 +151,12 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
                 torch_geometric.transforms.NormalizeFeatures(),
             ]
         )
-        self.val_transform = self.transform
+        self.val_transform = torch_geometric.transforms.Compose(
+            [
+                torch_geometric.transforms.NormalizeScale(),
+                torch_geometric.transforms.NormalizeFeatures(),
+            ]
+        )
         self.dataset_params = {
             "root": self.data_dir,
             "random_seed": random_seed,
