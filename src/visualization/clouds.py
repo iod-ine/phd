@@ -24,6 +24,7 @@ def scatter_point_cloud_2d(
         case "XY":
             x, y = xyz[:, 0], xyz[:, 1]
     ax.scatter(x, y, **kwargs)
+    ax.set_aspect("equal")
     return ax
 
 
