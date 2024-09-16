@@ -17,7 +17,7 @@ from torch import nn
 
 import src.clouds
 import src.visualization.clouds
-from src.datasets import SyntheticForestColored
+from src.datasets import SyntheticForestRGBGrid
 from src.metrics import Accuracy
 from src.models.pointnet import PointNet2TreeSegmentor
 from src.transforms import PerTreeRandomRotateScale
@@ -176,17 +176,17 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
 
     def prepare_data(self):
         """Prepare the data for setup (download, tokenize, etc.) on one device."""
-        SyntheticForestColored(**self.dataset_params)
+        SyntheticForestRGBGrid(**self.dataset_params)
 
     def setup(self, stage: str):
         """Prepare the data for training (split, transform, etc.) on all devices."""
         if stage == "fit":
-            self.train = SyntheticForestColored(
+            self.train = SyntheticForestRGBGrid(
                 split="train",
                 **self.dataset_params,
                 transform=self.transform,
             )
-            self.val = SyntheticForestColored(
+            self.val = SyntheticForestRGBGrid(
                 split="val",
                 **self.dataset_params,
                 transform=self.val_transform,

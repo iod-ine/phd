@@ -18,7 +18,7 @@ import src.clouds
 import src.datasets.utils
 
 
-class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
+class SyntheticForestRGBGrid(torch_geometric.data.InMemoryDataset):
     """A generated colored synthetic forest from the individual trees."""
 
     def __init__(
@@ -182,4 +182,4 @@ class SyntheticForestColored(torch_geometric.data.InMemoryDataset):
 
 
 if __name__ == "__main__":
-    dataset = SyntheticForestColored(root="data/tmp")
+    dataset = SyntheticForestRGBGrid(root="data/tmp")
