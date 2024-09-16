@@ -314,6 +314,7 @@ class SyntheticForestRGBPatch(torch_geometric.data.InMemoryDataset):
                 height=self.patch_height,
                 overlap=self.patch_overlap,
                 height_threshold=self.height_threshold,
+                features_to_extract=self.las_features,
             )
             data = torch_geometric.data.Data(
                 pos=torch.from_numpy(pos.astype(np.float32)),
