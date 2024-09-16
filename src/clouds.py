@@ -1,6 +1,7 @@
 """Functions for manipulating point clouds."""
 
 import enum
+import random
 from typing import Optional
 
 import laspy
@@ -96,6 +97,45 @@ def create_regular_grid(
         features.append(extract_las_features(las[height_mask], features_to_extract))
         indices.append(np.zeros(xyz.shape[0], dtype=np.int64) + i)
 
+    return np.vstack(coords), np.vstack(features), np.hstack(indices)
+
+
+def create_forest_patch(
+    las_list: list[laspy.LasData],
+    width: float,
+    height: float,
+    height_threshold: float,
+    overlap: float = 0.0,
+    features_to_extract: Optional[list[str]] = None,
+):
+    """Create a patch of synthetic forest from a collection of point clouds.
+
+    Returns:
+        pos, x, y: Coordinates, features, labels (indices the added objects).
+    """
+    coords, features, indices = [], [], []
+    accumulated_width, accumulated_height = 0, 0
+    index = 0
+
+    while accumulated_height < height:
+        accumulated_width = 0
+        heights = []
+
+        while accumulated_width < width:
+            las = random.choice(las_list)
+            height_mask = las.xyz[:, 2] >= height_threshold
+            xyz = las.xyz[height_mask]
+            xyz -= xyz.min(axis=0, keepdims=True)
+
+            coords.append(xyz + np.array([[accumulated_width, accumulated_height, 0]]))
+            features.append(extract_las_features(las, features_to_extract)[height_mask])
+            indices.append(np.zeros(xyz.shape[0], dtype=np.int64) + index)
+
+            index += 1
+            accumulated_width += np.max(xyz[:, 0]) - overlap
+            heights.append(np.max(xyz[:, 1]))
+
+        accumulated_height += np.mean(heights) - overlap
     return np.vstack(coords), np.vstack(features), np.hstack(indices)
 
 
