@@ -107,7 +107,6 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
         dy: float = 2.0,
         xy_noise_mean: float = 0.0,
         xy_noise_std: float = 1.0,
-        las_features=None,
         transform=None,
         pre_transform=None,
         pre_filter=None,
@@ -126,7 +125,6 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
         self.dy = dy
         self.xy_noise_mean = xy_noise_mean
         self.xy_noise_std = xy_noise_std
-        self.las_features = las_features or ["red", "green", "blue"]
         super().__init__(
             root=root,
             transform=transform,
@@ -208,7 +206,6 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
         patch_height: float = 20.0,
         patch_overlap: float = 0.0,
         height_threshold: float = 2.0,
-        las_features=None,
         transform=None,
         pre_transform=None,
         pre_filter=None,
@@ -224,7 +221,6 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
         self.patch_width = patch_width
         self.patch_height = patch_height
         self.patch_overlap = patch_overlap
-        self.las_features = las_features or ["red", "green", "blue"]
         super().__init__(
             root=root,
             transform=transform,
