@@ -14,21 +14,26 @@ class PointNet2TreeSegmentor(torch.nn.Module):
 
     """
 
-    def __init__(self, num_features: int):
+    def __init__(
+        self,
+        num_features: int,
+        set_abstraction_ratios: tuple[float, float] = (0.5, 0.25),
+        set_abstraction_radii: tuple[float, float] = (0.2, 0.4),
+    ):
         """Create a new PointNet++ semantic segmentor."""
         super().__init__()
 
         self.num_features = num_features
         self.set_abstraction_0 = SetAbstraction(
-            ratio=0.5,
-            r=0.2,
+            ratio=set_abstraction_ratios[0],
+            r=set_abstraction_radii[0],
             local_nn=torch_geometric.nn.MLP(
                 channel_list=[num_features + 3, 64, 128, 256],
             ),
         )
         self.set_abstraction_1 = SetAbstraction(
-            ratio=0.25,
-            r=0.4,
+            ratio=set_abstraction_ratios[1],
+            r=set_abstraction_radii[1],
             local_nn=torch_geometric.nn.MLP(
                 channel_list=[256 + 3, 512, 1024, 2048],
             ),
