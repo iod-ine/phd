@@ -130,7 +130,6 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         dy: float = 5.0,
         xy_noise_mean: float = 0.0,
         xy_noise_std: float = 1.0,
-        las_features: Optional[list[str]] = None,
         num_workers: int = 11,
     ):
         """Create a new data module instance."""
@@ -170,7 +169,6 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
             "dy": dy,
             "xy_noise_mean": xy_noise_mean,
             "xy_noise_std": xy_noise_std,
-            "las_features": las_features,
         }
         self.num_workers = num_workers
 

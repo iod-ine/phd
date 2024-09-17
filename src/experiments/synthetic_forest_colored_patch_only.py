@@ -137,7 +137,6 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         patch_width: float = 20.0,
         patch_height: float = 20.0,
         patch_overlap: float = 0.0,
-        las_features: Optional[list[str]] = None,
         num_workers: int = 11,
     ):
         """Create a new data module instance."""
@@ -174,7 +173,6 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
             "patch_width": patch_width,
             "patch_height": patch_height,
             "patch_overlap": patch_overlap,
-            "las_features": las_features,
         }
         self.num_workers = num_workers
 
