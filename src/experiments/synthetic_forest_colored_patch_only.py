@@ -28,6 +28,9 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
 
     def __init__(
         self,
+        num_features: int = 3,
+        set_abstraction_ratios: tuple[float, float] = (0.5, 0.25),
+        set_abstraction_radii: tuple[float, float] = (0.2, 0.4),
         loss: Optional[Callable] = None,
         lr: float = 1e-2,
         lr_start_factor: float = 0.1,
@@ -37,8 +40,15 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     ):
         """Create a new LitPointNet2TreeSegmentor instance."""
         super().__init__()
+        self.num_features = num_features
+        self.set_abstraction_ratios = set_abstraction_ratios
+        self.set_abstraction_radii = set_abstraction_radii
 
-        self.pointnet = PointNet2TreeSegmentor(num_features=3)
+        self.pointnet = PointNet2TreeSegmentor(
+            num_features=num_features,
+            set_abstraction_ratios=set_abstraction_ratios,
+            set_abstraction_radii=set_abstraction_radii,
+        )
         self.accuracy = Accuracy()
         self.loss = loss or nn.MSELoss()
 
