@@ -58,62 +58,59 @@ def recenter_cloud(xyz: np.ndarray) -> np.ndarray:
 
 
 def create_regular_grid(
-    las_list: list[laspy.LasData],
+    xyzs: list[np.ndarray],
+    features: list[np.ndarray],
     ncols: int,
     dx: float,
     dy: float,
     xy_noise_mean: float = 0.0,
     xy_noise_std: float = 0.0,
-    features_to_extract: Optional[list[str]] = None,
     height_threshold: float = 0.0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Arrange a collection of point clouds into a single cloud in a regular grid.
 
     Args:
-        las_list: List of LAS objects to combine.
+        xyzs: List of point cloud coordinate arrays.
+        features: List of point cloud feature arrays.
         ncols: Number of columns in the grid.
         dx: Step in the X direction.
         dy: Step in the Y direction.
         xy_noise_mean: Mean of the normal distribution of XY noise.
         xy_noise_std: Standard deviation of the normal distribution of XY noise.
-        features_to_extract: List of features to extract (have to be dimensions of the
-            LAS files).
         height_threshold: Points lower then this threshold are filtered out.
 
     Returns:
         pos, x, y: Coordinates, features, labels (indices of the objects in las_list).
     """
-    coords, features, indices = [], [], []
+    coords, feats, indices = [], [], []
     rng = np.random.default_rng()
 
-    for i, las in enumerate(las_list):
-        height_mask = las.xyz[:, 2] >= height_threshold
-        xyz = las.xyz[height_mask]
-        means = xyz.mean(axis=0, keepdims=True)
-        means[0][-1] = 0  # Don't recenter Z
+    for i, xyz in enumerate(xyzs):
+        height_mask = xyz[:, 2] >= height_threshold
+        pos = recenter_cloud(xyz[height_mask])
         x = i % ncols * dx + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
         y = i // ncols * dy + rng.normal(loc=xy_noise_mean, scale=xy_noise_std)
-        coords.append(xyz - means + np.array([[x, y, 0]]))
-        features.append(extract_las_features(las[height_mask], features_to_extract))
-        indices.append(np.zeros(xyz.shape[0], dtype=np.int64) + i)
+        coords.append(pos + np.array([[x, y, 0]]))
+        feats.append(features[i][height_mask])
+        indices.append(np.zeros(pos.shape[0], dtype=np.int64) + i)
 
-    return np.vstack(coords), np.vstack(features), np.hstack(indices)
+    return np.vstack(coords), np.vstack(feats), np.hstack(indices)
 
 
 def create_forest_patch(
-    las_list: list[laspy.LasData],
+    xyzs: list[np.ndarray],
+    features: list[np.ndarray],
     width: float,
     height: float,
     height_threshold: float,
     overlap: float = 0.0,
-    features_to_extract: Optional[list[str]] = None,
 ):
     """Create a patch of synthetic forest from a collection of point clouds.
 
     Returns:
         pos, x, y: Coordinates, features, labels (indices the added objects).
     """
-    coords, features, indices = [], [], []
+    coords, feats, indices = [], [], []
     accumulated_width, accumulated_height = 0, 0
     index = 0
 
@@ -122,13 +119,14 @@ def create_forest_patch(
         heights = []
 
         while accumulated_width < width:
-            las = random.choice(las_list)
-            height_mask = las.xyz[:, 2] >= height_threshold
-            xyz = las.xyz[height_mask]
+            idx = random.randint(0, len(xyzs) - 1)
+            xyz = xyzs[idx]
+            height_mask = xyz[:, 2] >= height_threshold
+            xyz = xyz[height_mask]
             xyz -= xyz.min(axis=0, keepdims=True)
 
             coords.append(xyz + np.array([[accumulated_width, accumulated_height, 0]]))
-            features.append(extract_las_features(las, features_to_extract)[height_mask])
+            feats.append(features[idx][height_mask])
             indices.append(np.zeros(xyz.shape[0], dtype=np.int64) + index)
 
             index += 1
@@ -136,7 +134,7 @@ def create_forest_patch(
             heights.append(np.max(xyz[:, 1]))
 
         accumulated_height += np.mean(heights) - overlap
-    return np.vstack(coords), np.vstack(features), np.hstack(indices)
+    return np.vstack(coords), np.vstack(feats), np.hstack(indices)
 
 
 def numpy_to_las(
