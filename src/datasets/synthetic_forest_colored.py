@@ -86,7 +86,7 @@ class SyntheticForestRGBGrid(torch_geometric.data.InMemoryDataset):
                     [f"Pine/pine_{i:>02}.las" for i in range(70)],
                     [f"Spruce/spruce_{i:>02}.las" for i in range(94)],
                     [f"Tilia/tilia_{i:>02}.las" for i in range(17)],
-                    ["ortho.tif"],
+                    [f"plot_{i:>02}.tif" for i in range(1, 11)],
                 ],
             )
         )
@@ -124,45 +124,55 @@ class SyntheticForestRGBGrid(torch_geometric.data.InMemoryDataset):
             path=self.raw_dir,
             unzip=True,
         )
-        kaggle.api.dataset_download_file(
-            dataset="sentinel3734/tree-detection-lidar-rgb-full-images",
-            file_name="ortho.tif",
-            path=self.raw_dir,
-        )
-        archive = pathlib.Path(self.raw_dir) / "ortho.tif.zip"
-        with zipfile.ZipFile(archive) as z:
-            z.extractall(path=self.raw_dir)
-        archive.unlink()
+        for i in range(1, 11):
+            file = f"plot_{i:>02}.tif"
+            kaggle.api.dataset_download_file(
+                dataset="sentinel3734/tree-detection-lidar-rgb",
+                file_name=f"ortho/{file}",
+                path=self.raw_dir,
+            )
+            archive = pathlib.Path(self.raw_dir) / f"{file}.zip"
+            with zipfile.ZipFile(archive) as z:
+                z.extractall(path=self.raw_dir)
+            archive.unlink()
 
     def process(self):
         """Process raw data and save it to processed_dir."""
-        raw_las_list = [laspy.read(p) for p in self.raw_paths if p.endswith(".las")]
-        processed_las_list = []
+        las_objects = [laspy.read(p) for p in self.raw_paths if p.endswith(".las")]
+        ortho_files = [p for p in self.raw_paths if p.endswith(".tif")]
 
-        with rasterio.open(pathlib.Path(self.raw_dir) / "ortho.tif") as dataset:
-            for raw_las in raw_las_list:
-                if not dataset.bounds.left < raw_las.xyz[0, 0] < dataset.bounds.right:
+        xyzs, features = [], []
+
+        for file in ortho_files:
+            with rasterio.open(pathlib.Path(file)) as dataset:
+                transformer = rasterio.transform.AffineTransformer(dataset.transform)
+                ortho = dataset.read()
+
+            for las in las_objects:
+                if not dataset.bounds.left < las.xyz[0, 0] < dataset.bounds.right:
                     continue
-                rgb = np.stack([c for c in dataset.sample(raw_las.xyz[:, :2])])
-                las = laspy.convert(raw_las, point_format_id=7)
-                las.red[:] = rgb[:, 0]
-                las.green[:] = rgb[:, 1]
-                las.blue[:] = rgb[:, 2]
-                processed_las_list.append(las)
+                if not dataset.bounds.bottom < las.xyz[0, 1] < dataset.bounds.top:
+                    continue
+
+                row, col = transformer.rowcol(las.x, las.y)
+                rgb = ortho[:, row, col]  # shape: (3, n_points)
+
+                xyzs.append(las.xyz)
+                features.append(np.swapaxes(rgb, 0, 1))
 
         data_list = []
         total_samples = self.train_samples + self.val_samples + self.test_samples
         random.seed(self.random_seed)
         for i in range(total_samples):
-            sample = random.sample(processed_las_list, k=self.trees_per_sample)
+            indices = random.sample(range(len(xyzs)), k=self.trees_per_sample)
             pos, x, y = src.clouds.create_regular_grid(
-                las_list=sample,
+                xyzs=[xyzs[i] for i in indices],
+                features=[features[i] for i in indices],
                 ncols=self.n_cols,
                 dx=self.dx,
                 dy=self.dy,
                 xy_noise_mean=self.xy_noise_mean,
                 xy_noise_std=self.xy_noise_std,
-                features_to_extract=self.las_features,
                 height_threshold=self.height_threshold,
             )
             data = torch_geometric.data.Data(
