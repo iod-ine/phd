@@ -84,6 +84,11 @@ class SyntheticForestRGBBase(torch_geometric.data.InMemoryDataset):
                 z.extractall(path=self.raw_dir)
             archive.unlink()
 
+    @property
+    def processed_file_names(self):
+        """List of files that need to be found in processed_dir to skip processing."""
+        return [f"{self.__class__.__name__}_{split}" for split in ("train", "val")]
+
 
 class SyntheticForestRGBGrid(SyntheticForestRGBBase):
     """Colored synthetic forest generated from individual trees by grid."""
@@ -91,11 +96,10 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
     def __init__(
         self,
         root,
-        split: Literal["train", "val", "test"] = "train",
+        split: Literal["train", "val"] = "train",
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
-        test_samples: int = 20,
         trees_per_sample: int = 100,
         height_threshold: float = 2.0,
         n_cols: Optional[int] = None,
@@ -115,7 +119,6 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
         self.random_seed = random_seed
         self.train_samples = train_samples
         self.val_samples = val_samples
-        self.test_samples = test_samples
         self.trees_per_sample = trees_per_sample
         self.height_threshold = height_threshold
         self.n_cols = n_cols or np.ceil(np.sqrt(trees_per_sample))
@@ -137,27 +140,6 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
                 self.load(self.processed_paths[0])
             case "val":
                 self.load(self.processed_paths[1])
-            case "test":
-                self.load(self.processed_paths[2])
-
-    @property
-    def processed_file_names(self):
-        """List of files that need to be found in processed_dir to skip processing."""
-        param_set_id = src.datasets.utils.generate_unique_id_for_parameter_set(
-            self.random_seed,
-            self.train_samples,
-            self.val_samples,
-            self.test_samples,
-            self.trees_per_sample,
-            self.height_threshold,
-            self.n_cols,
-            self.dx,
-            self.dy,
-            self.xy_noise_mean,
-            self.xy_noise_std,
-            self.las_features,
-        )
-        return [f"sfc_{split}_{param_set_id}" for split in ("train", "val", "test")]
 
     def process(self):
         """Process raw data and save it to processed_dir."""
@@ -184,7 +166,7 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
                 features.append(np.swapaxes(rgb, 0, 1))
 
         data_list = []
-        total_samples = self.train_samples + self.val_samples + self.test_samples
+        total_samples = self.train_samples + self.val_samples
         random.seed(self.random_seed)
         for i in range(total_samples):
             indices = random.sample(range(len(xyzs)), k=self.trees_per_sample)
@@ -206,12 +188,10 @@ class SyntheticForestRGBGrid(SyntheticForestRGBBase):
             data_list.append(data)
 
         train_data = data_list[: self.train_samples]
-        val_data = data_list[self.train_samples : self.train_samples + self.val_samples]
-        test_data = data_list[self.train_samples + self.val_samples :]
+        val_data = data_list[self.train_samples :]
 
         self.save(train_data, self.processed_paths[0])
         self.save(val_data, self.processed_paths[1])
-        self.save(test_data, self.processed_paths[2])
 
 
 class SyntheticForestRGBPatch(SyntheticForestRGBBase):
@@ -220,11 +200,10 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
     def __init__(
         self,
         root,
-        split: Literal["train", "val", "test"] = "train",
+        split: Literal["train", "val"] = "train",
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
-        test_samples: int = 20,
         patch_width: float = 20.0,
         patch_height: float = 20.0,
         patch_overlap: float = 0.0,
@@ -241,7 +220,6 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
         self.random_seed = random_seed
         self.train_samples = train_samples
         self.val_samples = val_samples
-        self.test_samples = test_samples
         self.height_threshold = height_threshold
         self.patch_width = patch_width
         self.patch_height = patch_height
@@ -260,24 +238,6 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
                 self.load(self.processed_paths[0])
             case "val":
                 self.load(self.processed_paths[1])
-            case "test":
-                self.load(self.processed_paths[2])
-
-    @property
-    def processed_file_names(self):
-        """List of files that need to be found in processed_dir to skip processing."""
-        param_set_id = src.datasets.utils.generate_unique_id_for_parameter_set(
-            self.random_seed,
-            self.train_samples,
-            self.val_samples,
-            self.test_samples,
-            self.height_threshold,
-            self.patch_height,
-            self.patch_width,
-            self.patch_overlap,
-            self.las_features,
-        )
-        return [f"sfc_{split}_{param_set_id}" for split in ("train", "val", "test")]
 
     def process(self):
         """Process raw data and save it to processed_dir."""
@@ -304,7 +264,7 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
                 features.append(np.swapaxes(rgb, 0, 1))
 
         data_list = []
-        total_samples = self.train_samples + self.val_samples + self.test_samples
+        total_samples = self.train_samples + self.val_samples
         random.seed(self.random_seed)
         for i in range(total_samples):
             pos, x, y = src.clouds.create_forest_patch(
@@ -323,12 +283,10 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
             data_list.append(data)
 
         train_data = data_list[: self.train_samples]
-        val_data = data_list[self.train_samples : self.train_samples + self.val_samples]
-        test_data = data_list[self.train_samples + self.val_samples :]
+        val_data = data_list[self.train_samples :]
 
         self.save(train_data, self.processed_paths[0])
         self.save(val_data, self.processed_paths[1])
-        self.save(test_data, self.processed_paths[2])
 
 
 if __name__ == "__main__":
