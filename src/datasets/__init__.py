@@ -2,5 +2,6 @@
 
 from src.datasets.synthetic_forest_rgb import (
     SyntheticForestRGBGrid,
+    SyntheticForestRGBMBFPatch,
     SyntheticForestRGBPatch,
 )

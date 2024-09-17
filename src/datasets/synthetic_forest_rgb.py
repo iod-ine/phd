@@ -11,6 +11,7 @@ import kaggle
 import laspy
 import numpy as np
 import rasterio
+import skimage
 import torch
 import torch_geometric
 
@@ -258,6 +259,111 @@ class SyntheticForestRGBPatch(SyntheticForestRGBBase):
 
                 xyzs.append(las.xyz)
                 features.append(np.swapaxes(rgb, 0, 1))
+
+        data_list = []
+        total_samples = self.train_samples + self.val_samples
+        random.seed(self.random_seed)
+        for i in range(total_samples):
+            pos, x, y = src.clouds.create_forest_patch(
+                xyzs=xyzs,
+                features=features,
+                width=self.patch_width,
+                height=self.patch_height,
+                overlap=self.patch_overlap,
+                height_threshold=self.height_threshold,
+            )
+            data = torch_geometric.data.Data(
+                pos=torch.from_numpy(pos.astype(np.float32)),
+                x=torch.from_numpy(x),
+                y=torch.from_numpy(y),
+            )
+            data_list.append(data)
+
+        train_data = data_list[: self.train_samples]
+        val_data = data_list[self.train_samples :]
+
+        self.save(train_data, self.processed_paths[0])
+        self.save(val_data, self.processed_paths[1])
+
+
+class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
+    """RGB+MBF synthetic forest generated from individual trees by patch."""
+
+    def __init__(
+        self,
+        root,
+        split: Literal["train", "val"] = "train",
+        random_seed: int = 42,
+        train_samples: int = 100,
+        val_samples: int = 20,
+        patch_width: float = 20.0,
+        patch_height: float = 20.0,
+        patch_overlap: float = 0.0,
+        height_threshold: float = 2.0,
+        transform=None,
+        pre_transform=None,
+        pre_filter=None,
+        log: bool = True,
+        force_reload: bool = False,
+    ):
+        """Create a new dataset instance."""
+        self.split = split
+        self.random_seed = random_seed
+        self.train_samples = train_samples
+        self.val_samples = val_samples
+        self.height_threshold = height_threshold
+        self.patch_width = patch_width
+        self.patch_height = patch_height
+        self.patch_overlap = patch_overlap
+        super().__init__(
+            root=root,
+            transform=transform,
+            pre_transform=pre_transform,
+            pre_filter=pre_filter,
+            log=log,
+            force_reload=force_reload,
+        )
+        match split:
+            case "train":
+                self.load(self.processed_paths[0])
+            case "val":
+                self.load(self.processed_paths[1])
+
+    def process(self):
+        """Process raw data and save it to processed_dir."""
+        las_objects = [laspy.read(p) for p in self.raw_paths if p.endswith(".las")]
+        ortho_files = [p for p in self.raw_paths if p.endswith(".tif")]
+
+        xyzs, features = [], []
+
+        for file in ortho_files:
+            with rasterio.open(pathlib.Path(file)) as dataset:
+                transformer = rasterio.transform.AffineTransformer(dataset.transform)
+                ortho = dataset.read()
+                multiscale_features = skimage.feature.multiscale_basic_features(
+                    image=ortho,
+                    channel_axis=0,
+                    intensity=True,
+                    edges=True,
+                    texture=True,
+                )
+                # Shapes:
+                #   ortho: (3, H, W)
+                #   multiscale_features: (H, W, n_features)
+
+            for las in las_objects:
+                if not dataset.bounds.left < las.xyz[0, 0] < dataset.bounds.right:
+                    continue
+                if not dataset.bounds.bottom < las.xyz[0, 1] < dataset.bounds.top:
+                    continue
+
+                row, col = transformer.rowcol(las.x, las.y)
+                rgb = ortho[:, row, col].astype(np.float32)  # shape: (3, n_points)
+                rgb = np.rollaxis(rgb, axis=1)  # shape: (n_points, 3)
+                mbf = multiscale_features[row, col, :]  # shape: (n_points, n_features)
+
+                xyzs.append(las.xyz)
+                features.append(np.hstack([rgb, mbf]))
 
         data_list = []
         total_samples = self.train_samples + self.val_samples
