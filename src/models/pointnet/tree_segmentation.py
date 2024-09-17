@@ -3,7 +3,6 @@
 import torch
 import torch_geometric
 
-from src.datasets import SyntheticForest
 from src.models.pointnet.utils import SetAbstraction
 
 
@@ -89,24 +88,3 @@ class PointNet2TreeSegmentor(torch.nn.Module):
             edge_index=torch.empty((2, 0), dtype=torch.int64, device=x_in.device),
         )
         return self.regressor(x_3)
-
-
-if __name__ == "__main__":
-    dataset = SyntheticForest(root="data/tmp/", trees_per_sample=10)
-    loader = torch_geometric.loader.DataLoader(dataset, batch_size=1, shuffle=True)
-    batch = next(iter(loader))
-    model = PointNet2TreeSegmentor(num_features=4)
-
-    criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
-
-    print("Overfitting a single batch:")
-
-    model.train()
-    for i in range(20):
-        pred = model(batch)
-        loss = criterion(pred.squeeze(), batch.y.float())
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        print(f"  At iteration {i:>02} loss is {loss.item():.4f}")
