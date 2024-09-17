@@ -30,6 +30,7 @@ dependencies = [
     "torch-scatter @ https://data.pyg.org/whl/torch-2.4.0%2Bcpu/torch_scatter-2.1.2-cp310-cp310-macosx_10_9_universal2.whl ; platform_system == 'Darwin'",
     "lazrs>=0.6.1",
     "kaggle>=1.6.17",
+    "scikit-image>=0.24.0",
 ]
 requires-python = "==3.10.*"
 readme = "README.md"
