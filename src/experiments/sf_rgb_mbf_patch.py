@@ -19,7 +19,7 @@ import src.clouds
 import src.visualization.clouds
 from src.datasets import SyntheticForestRGBMBFPatch
 from src.metrics import Accuracy
-from src.models.pointnet import PointNet2TreeSegmentor
+from src.models.pointnet import PointNet2TreeSegmentorLarge
 from src.transforms import PerTreeRandomRotateScale
 
 
@@ -29,8 +29,8 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     def __init__(
         self,
         num_features: int = 3,
-        set_abstraction_ratios: tuple[float, float] = (0.5, 0.25),
-        set_abstraction_radii: tuple[float, float] = (0.2, 0.4),
+        set_abstraction_ratios: tuple[float, float] = (0.5, 0.5, 0.5),
+        set_abstraction_radii: tuple[float, float] = (0.4, 0.4, 0.4),
         loss: Optional[Callable] = None,
         lr: float = 1e-2,
         lr_start_factor: float = 0.1,
@@ -44,7 +44,7 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
         self.set_abstraction_ratios = set_abstraction_ratios
         self.set_abstraction_radii = set_abstraction_radii
 
-        self.pointnet = PointNet2TreeSegmentor(
+        self.pointnet = PointNet2TreeSegmentorLarge(
             num_features=num_features,
             set_abstraction_ratios=set_abstraction_ratios,
             set_abstraction_radii=set_abstraction_radii,
