@@ -293,6 +293,12 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
         self,
         root,
         split: Literal["train", "val"] = "train",
+        intensity: bool = False,
+        edges: bool = False,
+        texture: bool = True,
+        sigma_min: float = 0.5,
+        sigma_max: float = 8,
+        num_sigma: Optional[int] = None,
         random_seed: int = 42,
         train_samples: int = 100,
         val_samples: int = 20,
@@ -308,6 +314,12 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
     ):
         """Create a new dataset instance."""
         self.split = split
+        self.intensity = intensity
+        self.edges = edges
+        self.texture = texture
+        self.sigma_min = sigma_min
+        self.sigma_max = sigma_max
+        self.num_sigma = num_sigma
         self.random_seed = random_seed
         self.train_samples = train_samples
         self.val_samples = val_samples
@@ -343,9 +355,12 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
                 multiscale_features = skimage.feature.multiscale_basic_features(
                     image=ortho,
                     channel_axis=0,
-                    intensity=True,
-                    edges=True,
-                    texture=True,
+                    intensity=self.intensity,
+                    edges=self.edges,
+                    texture=self.texture,
+                    sigma_min=self.sigma_min,
+                    sigma_max=self.sigma_max,
+                    num_sigma=self.num_sigma,
                 )
                 # Shapes:
                 #   ortho: (3, H, W)
