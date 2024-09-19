@@ -2,7 +2,7 @@
 
 import enum
 import random
-from typing import Optional
+from typing import Literal, Optional
 
 import laspy
 import numpy as np
@@ -50,11 +50,20 @@ def normalize_cloud_height(
     return np.clip(out, a_min=0, a_max=np.inf)
 
 
-def recenter_cloud(xyz: np.ndarray) -> np.ndarray:
-    """Subtract the mean from X and Y coordinates of all points."""
-    means = xyz.mean(axis=0, keepdims=True)
-    means[0][-1] = 0  # Don't recenter Z
-    return xyz - means
+def recenter_cloud(
+    xyz: np.ndarray,
+    *,
+    mode: Literal["min", "mean"] = "min",
+) -> np.ndarray:
+    """Subtract the mean or the minimum from X and Y coordinates of all points."""
+    if mode == "min":
+        shift = xyz.min(axis=0, keepdims=True)
+    elif mode == "mean":
+        shift = np.mean(xyz, axis=0, keepdims=True)
+    else:
+        raise NotImplementedError(f"Unknown recentering mode: {mode}")
+    shift[0][-1] = 0  # Don't recenter Z
+    return xyz - shift
 
 
 def create_regular_grid(
