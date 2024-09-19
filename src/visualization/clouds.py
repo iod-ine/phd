@@ -5,6 +5,8 @@ from typing import Literal, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 
+import src.clouds
+
 
 def scatter_point_cloud_2d(
     xyz: np.ndarray,
@@ -12,6 +14,7 @@ def scatter_point_cloud_2d(
     *,
     ax: Optional[plt.Axes] = None,
     sort_by_height: bool = True,
+    recenter: bool = True,
     color=None,
     s=2,
     **kwargs,
@@ -21,6 +24,8 @@ def scatter_point_cloud_2d(
         fig, ax = plt.subplots()
     if sort_by_height:
         xyz = xyz[np.argsort(xyz[:, 2])]
+    if recenter:
+        xyz = src.clouds.recenter_cloud(xyz)
     color = color if color is not None else xyz[:, 2]
     match projection:
         case "XZ":
