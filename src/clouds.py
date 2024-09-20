@@ -269,3 +269,34 @@ def extract_las_features(
     for i, feature in enumerate(features_to_extract):
         features[:, i] = las[feature]
     return features
+
+
+def dropout_low_points_sigmoid(
+    xyz: np.ndarray,
+    scale: float = 8.0,
+    shift: float = 3.0,
+    seed: Optional[int] = None,
+):
+    """Drop low point from a cloud using a sigmoid as a probability distribution.
+
+    Lower points are more likely to get dropped out: the sigmoid is applied to reversed
+    normalized height (highest points is 0, lowest point is 1). The formula for the
+    probability of dropout is:
+
+        1 / (1 + exp(-reversed_normalized_height * scale + shift))
+
+    Args:
+        xyz: Point cloud coordinates.
+        scale: Scale. Controls the steepness of the probability curve.
+        shift: Shift. Controls the position of the sigmoid.
+        seed: Random seed.
+
+    """
+    rng = np.random.default_rng(seed=seed)
+
+    height = xyz[:, 2]
+    reversed_normalized_height = 1 - height / height.max()
+    threshold = 1 / (1 + np.exp(-reversed_normalized_height * scale + shift))
+    mask = threshold < rng.uniform(size=height.size)
+
+    return xyz[mask]
