@@ -306,6 +306,9 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
         patch_height: float = 20.0,
         patch_overlap: float = 0.0,
         height_threshold: float = 2.0,
+        height_dropout_sigmoid_scale: Optional[float] = None,
+        height_dropout_sigmoid_shift: Optional[float] = None,
+        height_dropout_sigmoid_seed: Optional[int] = None,
         transform=None,
         pre_transform=None,
         pre_filter=None,
@@ -327,6 +330,9 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
         self.patch_width = patch_width
         self.patch_height = patch_height
         self.patch_overlap = patch_overlap
+        self.height_dropout_sigmoid_scale = height_dropout_sigmoid_scale
+        self.height_dropout_sigmoid_shift = height_dropout_sigmoid_shift
+        self.height_dropout_sigmoid_seed = height_dropout_sigmoid_seed
         super().__init__(
             root=root,
             transform=transform,
@@ -372,12 +378,22 @@ class SyntheticForestRGBMBFPatch(SyntheticForestRGBBase):
                 if not dataset.bounds.bottom < las.xyz[0, 1] < dataset.bounds.top:
                     continue
 
-                row, col = transformer.rowcol(las.x, las.y)
+                if self.height_dropout_sigmoid_scale is not None:
+                    xyz = src.clouds.dropout_low_points_sigmoid(
+                        xyz=las.xyz,
+                        scale=self.height_dropout_sigmoid_scale,
+                        shift=self.height_dropout_sigmoid_shift,
+                        seed=self.height_dropout_sigmoid_seed,
+                    )
+                else:
+                    xyz = las.xyz
+
+                row, col = transformer.rowcol(xyz[:, 0], xyz[:, 1])
                 rgb = ortho[:, row, col].astype(np.float32)  # shape: (3, n_points)
                 rgb = np.rollaxis(rgb, axis=1)  # shape: (n_points, 3)
                 mbf = multiscale_features[row, col, :]  # shape: (n_points, n_features)
 
-                xyzs.append(las.xyz)
+                xyzs.append(xyz)
                 features.append(np.hstack([rgb, mbf]))
 
         data_list = []
