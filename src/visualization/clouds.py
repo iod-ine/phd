@@ -22,18 +22,18 @@ def scatter_point_cloud_2d(
     """Create a 2D scatter plot of a point cloud."""
     if ax is None:
         fig, ax = plt.subplots()
-    if sort_by_height:
-        xyz = xyz[np.argsort(xyz[:, 2])]
     if recenter:
         xyz = src.clouds.recenter_cloud(xyz)
-    color = color if color is not None else xyz[:, 2]
     match projection:
         case "XZ":
+            if sort_by_height:
+                xyz = xyz[np.argsort(xyz[:, 2])]
             x, y = xyz[:, 0], xyz[:, 2]
         case "YZ":
             x, y = xyz[:, 1], xyz[:, 2]
         case "XY":
             x, y = xyz[:, 0], xyz[:, 1]
+    color = color if color is not None else xyz[:, 2]
     ax.scatter(x, y, s=s, c=color, **kwargs)
     ax.set_aspect("equal")
     return ax
