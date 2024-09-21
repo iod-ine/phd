@@ -150,8 +150,8 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         patch_width: float = 20.0,
         patch_height: float = 20.0,
         patch_overlap: float = 0.0,
-        height_droput_sigmoid_scale: Optional[float] = None,
-        height_droput_sigmoid_shift: Optional[float] = None,
+        height_dropout_sigmoid_scale: Optional[float] = None,
+        height_dropout_sigmoid_shift: Optional[float] = None,
         height_dropout_sigmoid_seed: Optional[int] = None,
         num_workers: int = 11,
     ):
@@ -194,8 +194,8 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
             "patch_width": patch_width,
             "patch_height": patch_height,
             "patch_overlap": patch_overlap,
-            "height_droput_sigmoid_scale": height_droput_sigmoid_scale,
-            "height_droput_sigmoid_shift": height_droput_sigmoid_shift,
+            "height_dropout_sigmoid_scale": height_dropout_sigmoid_scale,
+            "height_dropout_sigmoid_shift": height_dropout_sigmoid_shift,
             "height_dropout_sigmoid_seed": height_dropout_sigmoid_seed,
         }
         self.num_workers = num_workers
