@@ -103,24 +103,32 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
             params=self.parameters(),
             lr=self.lr,
         )
-        scheduler = torch.optim.lr_scheduler.SequentialLR(
-            optimizer=optimizer,
-            schedulers=[
-                torch.optim.lr_scheduler.LinearLR(
-                    optimizer=optimizer,
-                    start_factor=self.lr_start_factor,
-                    end_factor=1.0,
-                    total_iters=self.lr_warmup_iters,
-                ),
-                torch.optim.lr_scheduler.LinearLR(
-                    optimizer=optimizer,
-                    start_factor=1.0,
-                    end_factor=self.lr_end_factor,
-                    total_iters=self.lr_decay_iters,
-                ),
-            ],
-            milestones=[self.lr_warmup_iters],
-        )
+        if self.lr_warmup_iters > 0:
+            scheduler = torch.optim.lr_scheduler.SequentialLR(
+                optimizer=optimizer,
+                schedulers=[
+                    torch.optim.lr_scheduler.LinearLR(
+                        optimizer=optimizer,
+                        start_factor=self.lr_start_factor,
+                        end_factor=1.0,
+                        total_iters=self.lr_warmup_iters,
+                    ),
+                    torch.optim.lr_scheduler.LinearLR(
+                        optimizer=optimizer,
+                        start_factor=1.0,
+                        end_factor=self.lr_end_factor,
+                        total_iters=self.lr_decay_iters,
+                    ),
+                ],
+                milestones=[self.lr_warmup_iters],
+            )
+        else:
+            scheduler = torch.optim.lr_scheduler.LinearLR(
+                optimizer=optimizer,
+                start_factor=1.0,
+                end_factor=self.lr_end_factor,
+                total_iters=self.lr_decay_iters,
+            )
         return {
             "optimizer": optimizer,
             "lr_scheduler": scheduler,
