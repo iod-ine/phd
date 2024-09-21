@@ -45,6 +45,7 @@ def scatter_point_cloud_3d(
     ax=None,
     recenter: bool = True,
     color=None,
+    s=1,
     figsize=None,
     elev=None,
     azim=None,
@@ -58,6 +59,6 @@ def scatter_point_cloud_3d(
     if recenter:
         xyz = src.clouds.recenter_cloud(xyz)
     ax.view_init(elev=elev, azim=azim)
-    ax.scatter(*np.rollaxis(xyz, 1), c=color, s=1, cmap=cmap)
+    ax.scatter(*np.rollaxis(xyz, 1), c=color, s=s, cmap=cmap)
     ax.set_aspect("equal")
     return ax
