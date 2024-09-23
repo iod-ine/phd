@@ -32,4 +32,4 @@ class PerTreeReverseDistanceWeighted(torch.nn.Module):
             p=2,
             dim=1,
         )
-        return base_loss / (distance_to_tree_centroid + 1)
+        return torch.mean(base_loss / (distance_to_tree_centroid + 1))
