@@ -73,7 +73,10 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     def training_step(self, batch, batch_idx):  # noqa: ARG002
         """Process a single batch of the training dataset and return the loss."""
         pred = self.pointnet(batch)
-        loss = self.loss(pred.squeeze(), batch.y.float())
+        if isinstance(self.loss, src.losses.PerTreeReverseDistanceWeighted):
+            loss = self.loss(pred.squeeze(), batch.y.float(), batch.pos)
+        else:
+            loss = self.loss(pred.squeeze(), batch.y.float())
         per_batch_max_index, _ = torch_scatter.scatter_max(
             src=batch.y,
             index=batch.batch,
