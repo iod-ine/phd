@@ -88,7 +88,10 @@ class PointNet2TreeSegmentorModule(L.LightningModule):
     def validation_step(self, batch, batch_idx):  # noqa: ARG002
         """Process a single batch of the validation dataset and return the loss."""
         pred = self.pointnet(batch)
-        loss = self.loss(pred.squeeze(), batch.y.float())
+        if isinstance(self.loss, src.losses.PerTreeReverseDistanceWeighted):
+            loss = self.loss(pred.squeeze(), batch.y.float(), batch.pos)
+        else:
+            loss = self.loss(pred.squeeze(), batch.y.float())
         self.validation_step_outputs.append(loss)
         self.accuracy(pred.squeeze().round(), batch.y)
 
