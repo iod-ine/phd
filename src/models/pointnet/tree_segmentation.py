@@ -52,7 +52,7 @@ class PointNet2TreeSegmentor(torch.nn.Module):
             add_self_loops=True,
         )
         self.regressor = torch_geometric.nn.MLP(
-            channel_list=[64, 32, 16, 1],
+            channel_list=[64 + 3, 32, 16, 1],
             bias=False,
         )
 
@@ -87,7 +87,7 @@ class PointNet2TreeSegmentor(torch.nn.Module):
             pos=pos_in,
             edge_index=torch.empty((2, 0), dtype=torch.int64, device=x_in.device),
         )
-        return self.regressor(x_3)
+        return self.regressor(torch.cat([x_3, pos_in], dim=1))
 
 
 class PointNet2TreeSegmentorLarge(torch.nn.Module):
@@ -150,7 +150,7 @@ class PointNet2TreeSegmentorLarge(torch.nn.Module):
             add_self_loops=True,
         )
         self.regressor = torch_geometric.nn.MLP(
-            channel_list=[64, 32, 16, 1],
+            channel_list=[64 + 3, 32, 16, 1],
             bias=False,
         )
 
@@ -199,7 +199,7 @@ class PointNet2TreeSegmentorLarge(torch.nn.Module):
             pos=pos_in,
             edge_index=torch.empty((2, 0), dtype=torch.int64, device=x_in.device),
         )
-        return self.regressor(x_2)
+        return self.regressor(torch.cat([x_2, pos_in], dim=1))
 
 
 if __name__ == "__main__":
