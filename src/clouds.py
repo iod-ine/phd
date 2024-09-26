@@ -142,7 +142,7 @@ def create_forest_patch(
             accumulated_width += np.max(xyz[:, 0]) - overlap
             heights.append(np.max(xyz[:, 1]))
 
-        accumulated_height += np.mean(heights) - overlap
+        accumulated_height += np.mean(heights)
     return np.vstack(coords), np.vstack(feats), np.hstack(indices)
 
 
