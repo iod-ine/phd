@@ -167,6 +167,7 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
         height_dropout_sigmoid_scale: Optional[float] = None,
         height_dropout_sigmoid_shift: Optional[float] = None,
         height_dropout_sigmoid_seed: Optional[int] = None,
+        force_reload: bool = False,
         num_workers: int = 11,
     ):
         """Create a new data module instance."""
@@ -211,6 +212,7 @@ class SyntheticForestColoredDataModule(L.LightningDataModule):
             "height_dropout_sigmoid_scale": height_dropout_sigmoid_scale,
             "height_dropout_sigmoid_shift": height_dropout_sigmoid_shift,
             "height_dropout_sigmoid_seed": height_dropout_sigmoid_seed,
+            "force_reload": force_reload,
         }
         self.num_workers = num_workers
 
