@@ -273,6 +273,7 @@ def extract_las_features(
 
 def dropout_low_points_sigmoid(
     xyz: np.ndarray,
+    *arrays: np.ndarray,
     scale: float = 8.0,
     shift: float = 3.0,
     seed: Optional[int] = None,
@@ -287,6 +288,7 @@ def dropout_low_points_sigmoid(
 
     Args:
         xyz: Point cloud coordinates.
+        arrays: Additional arrays to apply the same dropout to.
         scale: Scale. Controls the steepness of the probability curve.
         shift: Shift. Controls the position of the sigmoid.
         seed: Random seed.
@@ -299,4 +301,4 @@ def dropout_low_points_sigmoid(
     threshold = 1 / (1 + np.exp(-reversed_normalized_height * scale + shift))
     mask = threshold < rng.uniform(size=height.size)
 
-    return xyz[mask]
+    return xyz[mask] if len(arrays) == 0 else xyz[mask], *[arr[mask] for arr in arrays]
